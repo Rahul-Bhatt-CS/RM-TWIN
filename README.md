@@ -176,3 +176,28 @@ No 3D model, mesh mapping, WebGL renderer or part-selection API is implemented i
 ## AI-use note
 
 AI assistance was used to inspect the earlier project, propose the expanded schema and architecture, draft implementation files and identify security concerns. The developer must run the build/tests, review generated code, verify standards and dataset citations, and be able to explain all scoring and security decisions. The health-index weights and thresholds are explicit demo assumptions, not externally validated rules.
+
+## Interactive transformer model
+
+The Overview screen includes a conceptual 3D transformer model rendered with the browser Canvas 2D API using projected 3D geometry. It does not require a third-party 3D runtime dependency.
+
+### Model interactions
+
+- Drag on the model to orbit/rotate the transformer.
+- Use the mouse wheel or the + / − controls to zoom.
+- Use Reset view to restore the default camera angle and scale.
+- Hover over a component to highlight it.
+- Click a component to select it and open its condition inspector.
+- The component list beside the model is an accessible alternative for selecting the same parts.
+
+### Component-to-data mapping
+
+| Model component | Health group / records |
+|---|---|
+| Main tank and radiator banks | Thermal and loading readings |
+| Conservator | Oil and DGA diagnostic records |
+| HV / LV bushings | Insulation diagnostic records |
+| Tap-changer housing | Mechanical / electrical diagnostic records |
+| Control cabinet and cooling fans | Protection and auxiliary event records |
+
+The current model is conceptual geometry, not manufacturer-specific CAD, a dimensionally accurate transformer, or a claim about physical sensor locations. The inspector maps components to asset-level health groups and currently available records. For a future detailed model, replace the conceptual geometry with a licensed GLB/glTF CAD export and retain the stable component identifiers / group keys used by the inspector.

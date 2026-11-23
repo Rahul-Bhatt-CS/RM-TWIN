@@ -27,3 +27,13 @@
 - ML remaining-life prediction: no validated training data or evaluation protocol.
 - 3D model: deferred until a reliable part-to-diagnostic mapping and model asset exist.
 - Real sensor protocols: no hardware/gateway supplied.
+
+## ADR — Interactive 3D model navigation
+
+**Decision:** Add a dependency-free Canvas-based projected 3D transformer model to the Overview screen. It supports pointer drag rotation, wheel and button zoom, hover highlighting, click selection, reset view, and an accessible component list.
+
+**Component identifiers:** `main-tank`, `conservator`, `radiator-left`, `radiator-right`, `hv-bushing-a/b/c`, `lv-bushing-a/b/c`, `tap-changer`, `control-cabinet`, and `cooling-fans`.
+
+**Data mapping:** Model parts map to the existing health component keys `THERMAL`, `OIL_DGA`, `INSULATION`, `MECHANICAL`, and `PROTECTION`. The inspector reads latest thermal values from the dashboard and fetches diagnostic / protection records for the selected group.
+
+**Trade-off:** The model is an illustrative 3D navigation model, not manufacturer CAD or a physics simulation. No Three.js dependency is required for this version. A future GLB/glTF viewer can replace the renderer while preserving component IDs and data-group mappings.

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { FormEvent } from 'react';
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { api } from './api';
+import Transformer3D from './Transformer3D';
 import type { Alert, Dashboard, Diagnostic, Health, Page, Protection, Reading, Transformer } from './types';
 
 type Tab='overview'|'readings'|'diagnostics'|'alerts'|'health'|'protection';
@@ -90,6 +91,7 @@ function Overview({data,onOpen}:{data:Dashboard|null,onOpen:(tab:Tab)=>void}){
  const h=data.health;const readings=data.latestReadings;
  return <div className="overview">
   <section className="health-hero"><div><span className="eyebrow light">CONDITION ASSESSMENT · DEMONSTRATION</span><h2>{h?.healthIndex===null||!h?'Health index unavailable':`${h.healthIndex.toFixed(2)} / 100`}</h2><p>{h?.explanation||'Waiting for sufficient measurements to assess condition.'}</p></div><div className="hero-state"><Status value={h?.status||'UNAVAILABLE'}/><small>Coverage {h?`${(h.coverage*100).toFixed(0)}%`:'—'}</small></div></section>
+  <Transformer3D data={data}/>
   <div className="metric-cards">{readings.map(r=><div className="metric" key={r.id}><small>{label(r.measurementType)}</small><strong>{r.value} <i>{r.unit}</i></strong><span>{r.source} · {fmt(r.recordedAt)}</span></div>)}</div>
   <div className="split">
    <section className="panel"><div className="section-title"><div><h3>Health components</h3><p>Scores are calculated only where inputs exist.</p></div></div>{h?.components.map(c=><div className="component" key={c.key}><div><b>{c.label}</b><span>{c.score===null?'Unknown':`${c.score}/100`} · {c.state}</span></div><div className="bar"><i style={{width:`${c.score??0}%`}}/></div><p>{c.explanation}</p></div>)}</section>

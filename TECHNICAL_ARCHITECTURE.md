@@ -41,3 +41,7 @@ See `docs/SECURITY_REVIEW.md`. In brief: exact CORS origins, DTO validation, bou
 
 ## Future 3D extension
 A future glTF viewer can use `componentKey` values to connect selected mesh nodes to health groups. Add `TransformerPart` and `ModelAsset` entities plus a parts API. A 3D click should resolve a part to its component key and then display existing measurements, tests, alerts and history. Keep rendering/model files in object storage; keep mappings and metadata in MySQL. No renderer is included in v2.
+
+## Interactive 3D model extension
+
+The Overview screen uses a dependency-free Canvas-based projected 3D model. Pointer drag rotates the model, wheel and controls zoom, hover highlights components, and click selects a component. A component inspector maps stable model IDs to the existing health group keys and fetches the relevant diagnostic or protection records. The model is illustrative geometry only; a future manufacturer-specific GLB/glTF asset can replace the renderer while retaining component IDs and data mappings.

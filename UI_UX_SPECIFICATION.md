@@ -33,3 +33,11 @@ Allows recording a reported device/event status. The application is read/record-
 
 ## Future 3D interaction
 Not implemented. Future component selection will map glTF mesh IDs to stable backend component keys and open the same diagnostics/readings/alerts panel for that component. Do not render unselectable decorative 3D art.
+
+## Interactive 3D transformer explorer
+
+The Overview screen includes an interactive conceptual transformer model. Users can drag to rotate, zoom with the mouse wheel or controls, reset the view, hover to highlight a component, and click a component to inspect linked condition information. An adjacent component list provides an alternative selection method.
+
+The inspector displays the selected component's mapped health group, score/state where available, and relevant readings or diagnostic/protection records. If component-level telemetry is unavailable, the UI explicitly says so rather than fabricating a component-specific measurement.
+
+The current geometry is illustrative and is not a manufacturer-specific CAD drawing. Stable component IDs and health-group keys are retained so a future GLB/glTF model can replace the renderer without changing the backend data model.
