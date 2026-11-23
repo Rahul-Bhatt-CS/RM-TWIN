@@ -6,7 +6,7 @@ public class SensorReading {
  @ManyToOne(fetch=FetchType.LAZY,optional=false) @JoinColumn(name="transformer_id") private Transformer transformer;
  @Enumerated(EnumType.STRING) @Column(nullable=false,length=60) private MeasurementType measurementType;
  @Column(nullable=false,precision=16,scale=5) private BigDecimal value;
- @Column(nullable=false,length=20) private String unit;
+ @Column(nullable=false,length=40) private String unit;
  @Enumerated(EnumType.STRING) @Column(nullable=false,length=20) private DataSourceType source;
  @Column(nullable=false) private Instant recordedAt;
  protected SensorReading(){}

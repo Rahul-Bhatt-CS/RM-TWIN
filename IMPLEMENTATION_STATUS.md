@@ -37,3 +37,22 @@
 - ZIP integrity is checked after packaging.
 
 Before submission, run `npm ci && npm run build`, `mvn test`, and an end-to-end test against a disposable MySQL database. Verify model-viewer CDN loading and all eight hotspots in the target browser.
+
+
+## Latest diagnostic-data update
+- Backend seeds synthetic historical DGA/oil, insulation, phase-specific bushing, mechanical/electrical, OLTC, cooling and protection/auxiliary records for each simulation-enabled transformer.
+- Seeded records are explicitly `SIMULATED`; they are not physical measurements.
+- Health components now show illustrative scenario scores for synthetic groups instead of UNKNOWN. Explanations state that these are not standard-derived pass/fail ratings.
+- Imported diagnostic data without an approved interpretation method remains recorded-but-unscored.
+- Protection status examples are synthetic indications, not relay self-tests or proof of protection health.
+
+
+## Synthetic data coverage by 3D inspection point
+- MAIN_TANK: DGA gas panel, oil tests, IR/PI, winding dielectric, FRA, winding resistance and PD sample records.
+- CONSERVATOR: synthetic moisture and oil-level gauge check records.
+- HV_BUSHING / LV_BUSHING: phase-specific A/B/C capacitance and tan-delta sample records.
+- RADIATOR: radiator temperature-difference test record.
+- COOLING_FAN: vibration example plus live simulated fan state.
+- OLTC: contact-resistance and operating-time sample records plus live tap/motor telemetry.
+- CONTROL_CABINET: synthetic protection/auxiliary indication events.
+All sample test records are tagged SIMULATED and include non-operational-use disclaimers.

@@ -5,7 +5,7 @@ public class DiagnosticTest {
  @Id @GeneratedValue(strategy=GenerationType.IDENTITY) private Long id;
  @ManyToOne(fetch=FetchType.LAZY,optional=false) @JoinColumn(name="transformer_id") private Transformer transformer;
  @Column(nullable=false,length=60) private String testType; @Column(nullable=false,length=80) private String parameterName;
- @Column(nullable=false,precision=16,scale=5) private BigDecimal value; @Column(nullable=false,length=20) private String unit;
+ @Column(nullable=false,precision=16,scale=5) private BigDecimal value; @Column(nullable=false,length=40) private String unit;
  @Column(nullable=false) private Instant testDate; @Enumerated(EnumType.STRING) @Column(nullable=false,length=20) private DataSourceType source;
  @Column(length=160) private String laboratory; @Column(length=500) private String referenceNote; @Column(length=1000) private String notes;
  @Column(name="component_key",length=60) private String componentKey; @Column(length=8) private String phase;

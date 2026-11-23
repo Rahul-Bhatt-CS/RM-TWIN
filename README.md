@@ -226,3 +226,10 @@ The 3D view uses the Web Component `model-viewer` 4.0.0 loaded from the Google A
 
 ## Important security boundary
 This demonstration intentionally has no administrator token or authentication because that was requested. Write endpoints are unauthenticated. Keep the backend on localhost or a trusted private network; do not expose it publicly. Before public deployment, add proper identity, role-based authorization, rate limiting, audit trails and TLS. CORS is not authentication.
+
+
+## Synthetic diagnostic demonstration data
+
+When simulation is enabled, the backend seeds one historical set of synthetic diagnostic records per transformer. It includes DGA gases and oil tests, insulation/ dielectric tests, phase-specific HV/LV bushing examples, FRA, winding resistance, partial-discharge, OLTC and radiator records, plus synthetic protection/auxiliary status events. The records use `source=SIMULATED` and include notes stating they are not actual measurements or standards-based pass/fail conclusions. The dashboard displays illustrative scenario scores for these groups so the demonstration no longer shows every category as UNKNOWN. These scores are intentionally not represented as IEC/CEA/OEM health ratings. Imported records without a validated interpretation method remain unscored.
+
+Synthetic diagnostic history is seeded once per transformer. Continuous simulated telemetry continues at `SIMULATION_INTERVAL_MS` (default 5000 ms). A newly created transformer receives its synthetic diagnostic history on its first simulator tick.

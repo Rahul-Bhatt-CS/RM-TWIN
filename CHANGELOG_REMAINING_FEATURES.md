@@ -20,3 +20,11 @@ A true transformer-specific IEC 60076-7 thermal model is not activated. The sele
 
 ## Security
 Administrator token remains removed as requested. Write APIs remain unauthenticated; run only on localhost/trusted network until real authentication and authorization are implemented.
+
+
+## Database unit-length fix
+
+- Added Flyway migration `V4__widen_measurement_units.sql`.
+- Increased `diagnostic_test.unit` and `sensor_reading.unit` from VARCHAR(20) to VARCHAR(40).
+- Updated both JPA entity mappings to length 40.
+- This resolves MySQL error 1406 (`Data too long for column 'unit'`) when synthetic diagnostic labels such as `°C · synthetic indication` are inserted.
