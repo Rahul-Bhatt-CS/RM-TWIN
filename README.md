@@ -179,25 +179,38 @@ AI assistance was used to inspect the earlier project, propose the expanded sche
 
 ## Interactive transformer model
 
-The Overview screen includes a conceptual 3D transformer model rendered with the browser Canvas 2D API using projected 3D geometry. It does not require a third-party 3D runtime dependency.
+The Overview screen includes a detailed procedural GLB model with eight numbered clickable inspection hotspots. It uses model-viewer 4.0.0 loaded from a pinned Google CDN URL; browser internet access is required for the viewer library. The GLB model file is stored locally in `frontend/public/models/`.
 
 ### Model interactions
 
 - Drag on the model to orbit/rotate the transformer.
-- Use the mouse wheel or the + / − controls to zoom.
-- Use Reset view to restore the default camera angle and scale.
-- Hover over a component to highlight it.
-- Click a component to select it and open its condition inspector.
+- Use the mouse wheel/pinch gesture to zoom and drag to orbit the model.
+- Hover over a numbered hotspot to highlight it.
+- Click/tap a numbered hotspot to select the inspection area and open its condition inspector.
 - The component list beside the model is an accessible alternative for selecting the same parts.
 
 ### Component-to-data mapping
 
 | Model component | Health group / records |
 |---|---|
-| Main tank and radiator banks | Thermal and loading readings |
-| Conservator | Oil and DGA diagnostic records |
-| HV / LV bushings | Insulation diagnostic records |
-| Tap-changer housing | Mechanical / electrical diagnostic records |
-| Control cabinet and cooling fans | Protection and auxiliary event records |
+| 1 Main tank | Thermal and loading readings; oil/DGA records are listed separately |
+| 5 Radiator banks | Thermal and loading readings |
+| 2 Conservator | Oil and DGA diagnostic records |
+| 3 HV bushings / 4 LV bushings | Insulation diagnostic records |
+| 7 Tap-changer housing | Mechanical / electrical diagnostic records |
+| 6 Cooling fans / 8 control cabinet | Protection and auxiliary event records |
 
 The current model is conceptual geometry, not manufacturer-specific CAD, a dimensionally accurate transformer, or a claim about physical sensor locations. The inspector maps components to asset-level health groups and currently available records. For a future detailed model, replace the conceptual geometry with a licensed GLB/glTF CAD export and retain the stable component identifiers / group keys used by the inspector.
+
+## Selected reference transformer and 3D inspection
+
+The default project profile is the CEA-listed 100 MVA, 220/33 kV, three-phase power-transformer rating (`CEA-100MVA-220-33KV-3PH`). The 3D model is a detailed procedural conceptual illustration with eight numbered clickable inspection areas. It is not an OEM CAD model. See:
+
+- `docs/REFERENCE_TRANSFORMER_SPEC.md`
+- `docs/NUMBERED_3D_INSPECTION_MAP.md`
+- `docs/STANDARDS_ALIGNMENT.md`
+
+The simulator now derives apparent MVA and balanced three-phase HV/LV line currents from the registered nameplate. Temperature/load/fan sequences remain synthetic scenarios. The backend does not claim to implement IEC 60076-7 thermal equations; transformer-specific thermal constants and approved OEM alarm settings are not available in the reference rating alone.
+
+### 3D viewer runtime dependency
+The 3D view uses the Web Component `model-viewer` 4.0.0 loaded from the Google AJAX CDN in `frontend/index.html`. The model file is local at `frontend/public/models/transformer_100mva_220_33kv.glb`. A network connection is required for the viewer library unless you vendor that library locally.

@@ -28,16 +28,14 @@ public class HealthService {
    BigDecimal v=load.get().getValue();thermalScores.add(v.compareTo(warningLoad)>=0?new BigDecimal("40"):new BigDecimal("90"));thermalEvidence.add("Load "+v+"%");
    if(v.compareTo(warningLoad)>=0){warningDetected=true;alerts.raise(t,"LOAD_HIGH","High loading","Load crossed the configured demonstration trigger; duration and transformer loading guide are not modelled.","WARNING",v,"%");}else alerts.resolve(t,"LOAD_HIGH");
   }
-  if(oil.isPresent()){thermalScores.add(oil.get().getValue().compareTo(new BigDecimal("85"))>=0?new BigDecimal("50"):new BigDecimal("85"));thermalEvidence.add("Top oil "+oil.get().getValue()+" °C");}
+  if(oil.isPresent()){thermalEvidence.add("Top oil "+oil.get().getValue()+" °C");}
   if(!thermalScores.isEmpty()){BigDecimal s=average(thermalScores);parts.add(part("THERMAL","Thermal and loading",s,"0.25","ASSESSED",String.join("; ",thermalEvidence)+". Illustrative rule scores only."));weighted=weighted.add(s.multiply(new BigDecimal("0.25")));coverage=coverage.add(new BigDecimal("0.25"));}
   else parts.add(part("THERMAL","Thermal and loading",null,"0.25","UNKNOWN","No current thermal or load readings."));
   List<DiagnosticTest> tests=diagnostics.findTop100ByTransformerIdOrderByTestDateDesc(t.getId());
   Optional<DiagnosticTest> moisture=tests.stream().filter(x->x.getParameterName().equalsIgnoreCase("MOISTURE")).findFirst();
-  if(moisture.isPresent()){
-   BigDecimal v=moisture.get().getValue();BigDecimal s=v.compareTo(new BigDecimal("10"))>0?new BigDecimal("45"):new BigDecimal("85");
-   parts.add(part("OIL_DGA","Oil and dissolved-gas condition",s,"0.30","PARTIAL","Moisture "+v+" "+moisture.get().getUnit()+". DGA gas values are stored for review but are not automatically scored; use applicable IEC/IEEE interpretation and transformer context."));
-   weighted=weighted.add(s.multiply(new BigDecimal("0.30")));coverage=coverage.add(new BigDecimal("0.30"));
-  }else parts.add(part("OIL_DGA","Oil and dissolved-gas condition",null,"0.30","UNKNOWN","No moisture result available. DGA gas results may be recorded, but no automatic diagnosis is applied."));
+  if(!tests.isEmpty()){
+   parts.add(part("OIL_DGA","Oil and dissolved-gas condition",null,"0.30","RECORDED_NOT_INTERPRETED","Diagnostic records exist, including moisture="+(moisture.isPresent()?moisture.get().getValue()+" "+moisture.get().getUnit():"not available")+". No automatic oil/DGA score is assigned: interpret against the applicable IEC 60599 / IEEE C57.104 method, sampling context, trend and asset baseline."));
+  }else parts.add(part("OIL_DGA","Oil and dissolved-gas condition",null,"0.30","UNKNOWN","No oil/DGA test record is available. Missing evidence is not treated as healthy."));
   parts.add(part("INSULATION","Insulation condition",null,"0.25","UNKNOWN","No validated insulation assessment method or baseline configured."));
   parts.add(part("MECHANICAL","Mechanical and electrical condition",null,"0.15","UNKNOWN","No FRA, winding-resistance, bushing or partial-discharge scoring configured."));
   Page<ProtectionEvent> recent=protections.findByTransformerIdOrderByOccurredAtDesc(t.getId(),PageRequest.of(0,1));

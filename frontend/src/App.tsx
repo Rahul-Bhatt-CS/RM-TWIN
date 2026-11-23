@@ -6,7 +6,7 @@ import Transformer3D from './Transformer3D';
 import type { Alert, Dashboard, Diagnostic, Health, Page, Protection, Reading, Transformer } from './types';
 
 type Tab='overview'|'readings'|'diagnostics'|'alerts'|'health'|'protection';
-const metrics=[['WINDING_HOTSPOT_TEMPERATURE','Winding hot spot'],['TOP_OIL_TEMPERATURE','Top-oil temperature'],['LOAD_PERCENT','Load'],['AMBIENT_TEMPERATURE','Ambient temperature']] as const;
+const metrics=[['WINDING_HOTSPOT_TEMPERATURE','Winding hot spot'],['TOP_OIL_TEMPERATURE','Top-oil temperature'],['LOAD_PERCENT','Load'],['AMBIENT_TEMPERATURE','Ambient temperature'],['APPARENT_POWER_MVA','Apparent power'],['HV_LINE_CURRENT_A','HV line current'],['LV_LINE_CURRENT_A','LV line current'],['COOLING_FAN_STATUS','Cooling fan status']] as const;
 const fmt=(value:string|null|undefined)=>value?new Date(value).toLocaleString():'—';
 const label=(s:string)=>s.toLowerCase().replaceAll('_',' ').replace(/\b\w/g,c=>c.toUpperCase());
 function Pager({data,onPage}:{data:Page<unknown>|null,onPage:(p:number)=>void}){
@@ -22,7 +22,8 @@ export default function App(){
  const [readingPage,setReadingPage]=useState<Page<Reading>|null>(null),[alertPage,setAlertPage]=useState<Page<Alert>|null>(null),[healthPage,setHealthPage]=useState<Page<Health>|null>(null),[diagnosticPage,setDiagnosticPage]=useState<Page<Diagnostic>|null>(null),[protectionPage,setProtectionPage]=useState<Page<Protection>|null>(null);
  const [diagnosticForm,setDiagnosticForm]=useState({testType:'OIL_TEST',parameterName:'MOISTURE',value:'',unit:'ppm',testDate:new Date().toISOString().slice(0,16),laboratory:'',referenceNote:'',notes:''});
  const [protectionForm,setProtectionForm]=useState({deviceName:'Buchholz relay',eventType:'ALARM',active:true,occurredAt:new Date().toISOString().slice(0,16),notes:''});
- const [form,setForm]=useState({name:'',assetCode:'',manufacturer:'',model:'',serialNumber:'',voltageClassKv:'',ratedPowerMva:'',coolingType:'ONAN',insulationType:'MINERAL_OIL',commissioningDate:'',location:'',description:'',simulationEnabled:true});
+ const referenceProfile='CEA-100MVA-220-33KV-3PH';
+ const [form,setForm]=useState({name:'100 MVA 220/33 kV Power Transformer',assetCode:'TR-100MVA-220-33',manufacturer:'',model:'',serialNumber:'',voltageClassKv:'220',lvVoltageKv:'33',ratedPowerMva:'100',ratedFrequencyHz:'50',referenceProfile,coolingType:'ONAN/ONAF',insulationType:'MINERAL_OIL_PAPER',commissioningDate:'',location:'',description:'Reference profile based on CEA-listed 100 MVA, 220/33 kV, three-phase power transformer rating. Cooling arrangement and detailed design data must be confirmed from OEM nameplate/GTP.',simulationEnabled:true});
  const [formError,setFormError]=useState('');
  const loadFleet=useCallback(async()=>{const p=await api.transformers(0,100);setFleet(p.content);if(selected&& !p.content.some(t=>t.id===selected))setSelected(null);},[selected]);
  const loadDashboard=useCallback((id:number)=>api.dashboard(id),[]);
@@ -37,8 +38,8 @@ export default function App(){
  }catch(e){setError(e instanceof Error?e.message:'Could not load records');}},[selected,tab,metric]);
  useEffect(()=>{if(tab!=='overview'&&selected!==null)loadTab(0);},[tab,selected,metric,loadTab]);
  const createTransformer=async(e:FormEvent)=>{e.preventDefault();setFormError('');try{
-  const created=await api.createTransformer({...form,voltageClassKv:form.voltageClassKv?Number(form.voltageClassKv):null,ratedPowerMva:form.ratedPowerMva?Number(form.ratedPowerMva):null,commissioningDate:form.commissioningDate||null});
-  await loadFleet();setSelected(created.id);setTab('overview');setShowCreate(false);setForm({name:'',assetCode:'',manufacturer:'',model:'',serialNumber:'',voltageClassKv:'',ratedPowerMva:'',coolingType:'ONAN',insulationType:'MINERAL_OIL',commissioningDate:'',location:'',description:'',simulationEnabled:true});
+  const created=await api.createTransformer({...form,voltageClassKv:form.voltageClassKv?Number(form.voltageClassKv):null,lvVoltageKv:form.lvVoltageKv?Number(form.lvVoltageKv):null,ratedPowerMva:form.ratedPowerMva?Number(form.ratedPowerMva):null,ratedFrequencyHz:form.ratedFrequencyHz?Number(form.ratedFrequencyHz):null,referenceProfile:form.referenceProfile,commissioningDate:form.commissioningDate||null});
+  await loadFleet();setSelected(created.id);setTab('overview');setShowCreate(false);setForm({name:'100 MVA 220/33 kV Power Transformer',assetCode:'TR-100MVA-220-33',manufacturer:'',model:'',serialNumber:'',voltageClassKv:'220',lvVoltageKv:'33',ratedPowerMva:'100',ratedFrequencyHz:'50',referenceProfile,coolingType:'ONAN/ONAF',insulationType:'MINERAL_OIL_PAPER',commissioningDate:'',location:'',description:'Reference profile based on CEA-listed 100 MVA, 220/33 kV, three-phase power transformer rating. Cooling arrangement and detailed design data must be confirmed from OEM nameplate/GTP.',simulationEnabled:true});
  }catch(e){setFormError(e instanceof Error?e.message:'Unable to create transformer');}};
  const addDiagnostic=async(e:FormEvent)=>{e.preventDefault();if(!selected)return;try{await api.addDiagnostic(selected,{...diagnosticForm,value:Number(diagnosticForm.value),testDate:new Date(diagnosticForm.testDate).toISOString()});setDiagnosticForm(v=>({...v,value:''}));await loadTab(0);setDashboard(await loadDashboard(selected));}catch(e){setError(e instanceof Error?e.message:'Unable to save test');}};
  const addProtection=async(e:FormEvent)=>{e.preventDefault();if(!selected)return;try{await api.addProtection(selected,{...protectionForm,occurredAt:new Date(protectionForm.occurredAt).toISOString()});await loadTab(0);}catch(e){setError(e instanceof Error?e.message:'Unable to save event');}};
@@ -55,9 +56,12 @@ export default function App(){
      <label>Manufacturer<input maxLength={120} value={form.manufacturer} onChange={e=>setForm({...form,manufacturer:e.target.value})}/></label>
      <label>Model<input maxLength={120} value={form.model} onChange={e=>setForm({...form,model:e.target.value})}/></label>
      <label>Serial number<input maxLength={100} value={form.serialNumber} onChange={e=>setForm({...form,serialNumber:e.target.value})}/></label>
-     <label>Voltage class (kV)<input type="number" min="0.01" max="2000" step="0.01" value={form.voltageClassKv} onChange={e=>setForm({...form,voltageClassKv:e.target.value})}/></label>
-     <label>Rated power (MVA)<input type="number" min="0.01" max="10000" step="0.01" value={form.ratedPowerMva} onChange={e=>setForm({...form,ratedPowerMva:e.target.value})}/></label>
-     <label>Cooling type<select value={form.coolingType} onChange={e=>setForm({...form,coolingType:e.target.value})}><option>ONAN</option><option>ONAF</option><option>OFAF</option><option>OFWF</option><option>OTHER</option></select></label>
+     <label>HV voltage (kV)<input type="number" min="0.01" max="2000" step="0.01" value={form.voltageClassKv} readOnly/></label>
+     <label>LV voltage (kV)<input type="number" min="0.01" max="2000" step="0.01" value={form.lvVoltageKv} readOnly/></label>
+     <label>Rated power (MVA)<input type="number" min="0.01" max="10000" step="0.01" value={form.ratedPowerMva} readOnly/></label>
+     <label>Frequency (Hz)<input type="number" min="1" max="400" step="0.01" value={form.ratedFrequencyHz} readOnly/></label>
+     <label>Reference profile<input readOnly value={form.referenceProfile}/></label>
+     <label>Cooling type<select value={form.coolingType} disabled><option>ONAN/ONAF</option><option>ONAN</option><option>ONAF</option><option>OFAF</option><option>OFWF</option><option>OTHER</option></select></label>
      <label>Insulation type<input value={form.insulationType} onChange={e=>setForm({...form,insulationType:e.target.value})}/></label>
      <label>Commissioning date<input type="date" value={form.commissioningDate} onChange={e=>setForm({...form,commissioningDate:e.target.value})}/></label>
      <label>Location<input maxLength={180} value={form.location} onChange={e=>setForm({...form,location:e.target.value})}/></label>

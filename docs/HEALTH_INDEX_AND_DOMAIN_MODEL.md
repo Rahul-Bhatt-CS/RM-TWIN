@@ -19,19 +19,19 @@ Stable backend keys are intended to survive UI changes and support a future 3D p
 | Key | Group | Proposed weight | Current evidence |
 |---|---|---:|---|
 | `THERMAL` | Thermal and loading | 25% | Simulated top-oil temperature, winding hot spot and load |
-| `OIL_DGA` | Oil and dissolved-gas condition | 30% | Imported moisture can contribute to the demo score; DGA gases are stored but not automatically diagnosed |
+| `OIL_DGA` | Oil and dissolved-gas condition | 30% | Imported moisture and DGA are stored and displayed; no automatic score/diagnosis is assigned |
 | `INSULATION` | Insulation condition | 25% | Unknown until a validated assessment method and baseline are configured |
 | `MECHANICAL` | Mechanical and electrical condition | 15% | Unknown until validated FRA, winding-resistance, bushing or PD interpretation is configured |
 | `PROTECTION` | Protection and auxiliary systems | 5% | Reported events are displayed; no score is inferred from absence of events |
 
-Weights are a prototype design assumption and total 100%. The current score is computed only from groups with supported inputs and is renormalized by available weight. `coverage` is the sum of available group weights. Missing groups are not assigned 100.
+Weights are a prototype design assumption and total 100%. The current score is computed only from groups with supported inputs and is renormalized by available weight. The thermal group uses explicit demo triggers; the oil/DGA group is no longer assigned an automatic score from a single moisture value. `coverage` is the sum of available group weights. Missing groups are not assigned 100.
 
 ## 3. Demonstration rules
 
 - Winding hot-spot warning and critical triggers are configurable environment values, defaulting to 95°C and 110°C.
 - Load warning trigger defaults to 100%.
-- Top-oil score uses a simple demonstration rule.
-- Moisture score uses a simple demonstration comparison around 10 ppm, with the caveat that CEA guidance is context-specific.
+- Top-oil temperature is shown as evidence but is not scored with an invented universal threshold.
+- Moisture is stored and displayed but is not automatically scored.
 - DGA gas concentrations, gas ratios and rates of change are not automatically scored.
 - BDV, tan delta, PD, FRA, furan, IR/PI and winding resistance are not automatically scored.
 
@@ -53,7 +53,7 @@ Store the source document, sample date, sample point, units, lab and method in n
 
 `../samples/cea_veeranam_dga_example.csv` contains a small transcription of two reported bottom-oil DGA sample dates for one transformer case in a CEA failure report. It is included as a research/demo example only. Verify the original report page/table and units before citing it in the final submission. The CSV is not loaded automatically into the simulator.
 
-## 7. Future 3D mapping
+## 7. Current 3D mapping
 
 A future `TransformerPart` entity should include:
 - `id`, `transformer_id`, `part_key`, `display_name`;

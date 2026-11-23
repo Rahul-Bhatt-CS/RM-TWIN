@@ -30,10 +30,13 @@
 
 ## ADR — Interactive 3D model navigation
 
-**Decision:** Add a dependency-free Canvas-based projected 3D transformer model to the Overview screen. It supports pointer drag rotation, wheel and button zoom, hover highlighting, click selection, reset view, and an accessible component list.
+**Decision:** Use a detailed local procedural GLB rendered by model-viewer with orbit/zoom/touch and eight numbered 3D inspection hotspots. The model is conceptual, not OEM CAD.
 
 **Component identifiers:** `main-tank`, `conservator`, `radiator-left`, `radiator-right`, `hv-bushing-a/b/c`, `lv-bushing-a/b/c`, `tap-changer`, `control-cabinet`, and `cooling-fans`.
 
 **Data mapping:** Model parts map to the existing health component keys `THERMAL`, `OIL_DGA`, `INSULATION`, `MECHANICAL`, and `PROTECTION`. The inspector reads latest thermal values from the dashboard and fetches diagnostic / protection records for the selected group.
 
 **Trade-off:** The model is an illustrative 3D navigation model, not manufacturer CAD or a physics simulation. No Three.js dependency is required for this version. A future GLB/glTF viewer can replace the renderer while preserving component IDs and data-group mappings.
+
+## Reference asset and 3D viewer
+The selected reference profile is `CEA-100MVA-220-33KV-3PH`. The local GLB contains procedural geometry and is rendered by model-viewer loaded from a pinned Google CDN URL. The model-viewer dependency therefore requires internet access at runtime; the GLB asset is local. Numbered hotspots are stable frontend identifiers mapped to existing condition groups.

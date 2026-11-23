@@ -29,3 +29,7 @@ There is no token or authentication check in this prototype. POST endpoints are 
 
 ## Future API
 `GET /transformers/{id}/parts` may return 3D part metadata and stable component keys. It is not implemented in v2.
+
+## Transformer nameplate profile additions
+
+Transformer create/read contracts include `lvVoltageKv`, `ratedFrequencyHz` and `referenceProfile`. The fixed default profile `CEA-100MVA-220-33KV-3PH` requires 100 MVA, 220 kV HV, 33 kV LV and 50 Hz. The simulator derives `APPARENT_POWER_MVA`, `HV_LINE_CURRENT_A`, `LV_LINE_CURRENT_A` and `COOLING_FAN_STATUS` readings. These derived/simulated values are labelled `SIMULATED` and are not live CT/SCADA measurements.

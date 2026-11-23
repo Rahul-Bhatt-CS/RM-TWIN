@@ -24,3 +24,7 @@ Flyway migration: `backend/src/main/resources/db/migration/V1__initial_schema.sq
 - `transformer_part`: asset-specific part identity, glTF node/mesh ID, component key and display metadata.
 - `model_asset`: object-storage reference, model version and checksum.
 - Optional mapping table from a part to sensor channels/diagnostic parameters.
+
+## V2 reference-profile fields
+
+Flyway migration `V2__reference_transformer_profile.sql` adds `lv_voltage_kv`, `rated_frequency_hz` and `reference_profile` to `transformer`. The default profile ID is `CEA-100MVA-220-33KV-3PH`.

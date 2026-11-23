@@ -44,4 +44,4 @@ A future glTF viewer can use `componentKey` values to connect selected mesh node
 
 ## Interactive 3D model extension
 
-The Overview screen uses a dependency-free Canvas-based projected 3D model. Pointer drag rotates the model, wheel and controls zoom, hover highlights components, and click selects a component. A component inspector maps stable model IDs to the existing health group keys and fetches the relevant diagnostic or protection records. The model is illustrative geometry only; a future manufacturer-specific GLB/glTF asset can replace the renderer while retaining component IDs and data mappings.
+The Overview screen loads a detailed local GLB procedural model through model-viewer 4.0.0. Users orbit, zoom, pan/touch and select eight numbered hotspots. Hotspots map stable model IDs to existing health-group keys and fetch available diagnostic/protection records. The geometry is conceptual, not OEM CAD; hotspot mappings do not claim physical sensor positions. The viewer library is loaded from a pinned Google CDN URL; the GLB itself is local.

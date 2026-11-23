@@ -40,3 +40,6 @@ Keep each dataset isolated by source and asset identity. Do not combine unrelate
 ## Health-index approach
 
 Condition assessment should combine test evidence, trends, baseline comparisons, data freshness and engineering context. A weighted condition index can support prioritisation, but the weights and score bands must be validated against the target fleet and known maintenance/failure history. This project currently uses a transparent demonstration index and does not claim to implement an official CEA/IEC/IEEE/CIGRE formula.
+
+## Selected reference asset
+The CEA December 2020 manual's standard-rating table lists a 100 MVA, 220/33 kV, three-phase power transformer. GridPulse uses that one profile. A conservator-type mineral-oil visual model and ONAN/ONAF-style radiators are chosen for the conceptual 3D geometry; those construction/cooling details are not inferred from the rating table. See `REFERENCE_TRANSFORMER_SPEC.md` and `STANDARDS_ALIGNMENT.md`.

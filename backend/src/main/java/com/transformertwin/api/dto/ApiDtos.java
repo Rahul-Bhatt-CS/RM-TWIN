@@ -11,14 +11,16 @@ public final class ApiDtos {
   @NotBlank @Pattern(regexp="[A-Za-z0-9._-]{2,60}") String assetCode,
   @Size(max=120) String manufacturer,@Size(max=120) String model,@Size(max=100) String serialNumber,
   @DecimalMin("0.01") @DecimalMax("2000") BigDecimal voltageClassKv,
+  @DecimalMin("0.01") @DecimalMax("2000") BigDecimal lvVoltageKv,
   @DecimalMin("0.01") @DecimalMax("10000") BigDecimal ratedPowerMva,
+  @DecimalMin("1") @DecimalMax("400") BigDecimal ratedFrequencyHz, @Size(max=100) String referenceProfile,
   @Size(max=40) String coolingType,@Size(max=60) String insulationType,
   LocalDate commissioningDate,@Size(max=180) String location,@Size(max=1000) String description,
   Boolean simulationEnabled) {}
  public record TransformerView(Long id,String name,String assetCode,String manufacturer,String model,String serialNumber,
-  BigDecimal voltageClassKv,BigDecimal ratedPowerMva,String coolingType,String insulationType,LocalDate commissioningDate,
+  BigDecimal voltageClassKv,BigDecimal lvVoltageKv,BigDecimal ratedPowerMva,BigDecimal ratedFrequencyHz,String referenceProfile,String coolingType,String insulationType,LocalDate commissioningDate,
   String location,String description,boolean simulationEnabled,Instant createdAt,Instant updatedAt) {
-  public static TransformerView from(Transformer t){return new TransformerView(t.getId(),t.getName(),t.getAssetCode(),t.getManufacturer(),t.getModel(),t.getSerialNumber(),t.getVoltageClassKv(),t.getRatedPowerMva(),t.getCoolingType(),t.getInsulationType(),t.getCommissioningDate(),t.getLocation(),t.getDescription(),t.isSimulationEnabled(),t.getCreatedAt(),t.getUpdatedAt());}
+  public static TransformerView from(Transformer t){return new TransformerView(t.getId(),t.getName(),t.getAssetCode(),t.getManufacturer(),t.getModel(),t.getSerialNumber(),t.getVoltageClassKv(),t.getLvVoltageKv(),t.getRatedPowerMva(),t.getRatedFrequencyHz(),t.getReferenceProfile(),t.getCoolingType(),t.getInsulationType(),t.getCommissioningDate(),t.getLocation(),t.getDescription(),t.isSimulationEnabled(),t.getCreatedAt(),t.getUpdatedAt());}
  }
  public record ReadingView(Long id,Long transformerId,String measurementType,BigDecimal value,String unit,String source,Instant recordedAt) {
   public static ReadingView from(SensorReading r){return new ReadingView(r.getId(),r.getTransformer().getId(),r.getMeasurementType().name(),r.getValue(),r.getUnit(),r.getSource().name(),r.getRecordedAt());}
