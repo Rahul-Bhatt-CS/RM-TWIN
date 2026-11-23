@@ -1,34 +1,33 @@
-# Implementation Status
+# Implementation Status — v2
 
-## Increment 1 — bootstrap and core monitoring slice
+## Implemented in source
+- Transformer registration from frontend and selection from fleet.
+- Transformer nameplate/identity metadata.
+- Backend simulator with independent per-transformer cycles.
+- Simulated top-oil temperature, winding hot spot, load and ambient temperature.
+- Demo health assessments, component groups, coverage and explanations.
+- Demo alerts with active-condition deduplication and resolution.
+- Diagnostic-test record entry and listing.
+- Protection-event record entry and listing.
+- SSE dashboard events.
+- Paginated readings, diagnostics, alerts, health history and protection events.
+- Flyway initial schema migration.
+- CORS allowlist, DTO validation, bounded page size and generic error handling. Write endpoints have no authentication in this demo build.
+- Future 3D component-key extension documented.
 
-**Status:** Source scaffold and first vertical slice created. Runtime verification pending.
+## Not implemented
+- Real sensor/gateway/SCADA integration.
+- Automatic DGA fault interpretation.
+- Validated transformer-specific health index or loading/thermal model.
+- CSV bulk import.
+- Authentication provider, individual users, RBAC and audit attribution.
+- 3D model/mesh rendering and part selection.
+- Retention/archival, report export and notifications.
 
-### Implemented in source
-- Spring Boot 3.5 / Java 21 backend project.
-- MySQL/JPA mappings for transformer, sensor readings, health assessments, and alerts.
-- Repositories and DTO-based REST endpoints for transformer list/detail, dashboard snapshot, latest readings, reading history, health history, alerts, and SSE events.
-- Backend-owned deterministic simulator with normal, stress, degraded, and recovery phases.
-- Rule-based health assessment with configurable demonstration thresholds.
-- Alert generation, duplicate suppression while active, and resolution when the trigger condition clears.
-- React/Vite/TypeScript frontend shell with Overview, Alerts, and History.
-- Dashboard cards, historical readings chart/table, health assessment history, loading/empty/error states, and live connection status.
-- Decision log and updated run instructions.
+## Verification performed in authoring environment
+- Frontend TypeScript check: `npx tsc -b` passed.
+- Frontend production bundling: not completed because the available archived node_modules lacked the platform-specific Rollup native package; npm installation timed out in this environment.
+- Backend: source generated, but Maven is not installed in this environment; Java 21 is present. Backend compilation/tests have not been run.
+- No runtime test against MySQL has been performed.
 
-### Not yet implemented
-- Automated integration tests for simulation-to-alert-to-history flow.
-- Frontend component tests.
-- Docker Compose or database bootstrap automation.
-- Production schema migrations.
-- Deployment configuration.
-- Domain-researched and validated transformer operating thresholds.
-- Research note and final AI-use note.
-
-### Verification status
-The current execution environment has Java 21 and Node 22, but Maven is not installed. An `npm install` attempt did not complete within the execution window. Therefore neither backend compilation/tests nor frontend dependency installation/build has been verified here. Run the commands in `README.md` in an environment with Maven, npm registry access, and MySQL before treating this increment as runnable.
-
-### Next increment
-1. Verify Maven and frontend builds.
-2. Add integration tests for the simulator, health assessment, alert generation/resolution, and historical queries.
-3. Validate frontend API field names and all screen states against a running backend.
-4. Add an end-to-end demonstration checklist.
+Before submission, run `mvn test` and `npm ci && npm run build` in a normal development environment, then run the app against a disposable MySQL database and exercise the README demo flow.

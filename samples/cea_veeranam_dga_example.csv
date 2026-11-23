@@ -1,0 +1,11 @@
+transformer_case,sample_date,sample_point,gas,concentration_ppm,source_type,notes
+Veeranam 50 MVA 230/33 kV,2023-01-27,Bottom oil,Hydrogen,5,IMPORTED,Transcribed example; verify original CEA report table before formal citation
+Veeranam 50 MVA 230/33 kV,2023-01-27,Bottom oil,Methane,6,IMPORTED,Transcribed example; verify original CEA report table before formal citation
+Veeranam 50 MVA 230/33 kV,2023-01-27,Bottom oil,Ethane,1,IMPORTED,Transcribed example; verify original CEA report table before formal citation
+Veeranam 50 MVA 230/33 kV,2023-01-27,Bottom oil,Ethylene,6,IMPORTED,Transcribed example; verify original CEA report table before formal citation
+Veeranam 50 MVA 230/33 kV,2023-01-27,Bottom oil,Acetylene,0.05,IMPORTED,Transcribed example; verify original CEA report table before formal citation
+Veeranam 50 MVA 230/33 kV,2023-10-06,Bottom oil,Hydrogen,7,IMPORTED,Transcribed example; verify original CEA report table before formal citation
+Veeranam 50 MVA 230/33 kV,2023-10-06,Bottom oil,Methane,11,IMPORTED,Transcribed example; verify original CEA report table before formal citation
+Veeranam 50 MVA 230/33 kV,2023-10-06,Bottom oil,Ethane,2,IMPORTED,Transcribed example; verify original CEA report table before formal citation
+Veeranam 50 MVA 230/33 kV,2023-10-06,Bottom oil,Ethylene,29,IMPORTED,Transcribed example; verify original CEA report table before formal citation
+Veeranam 50 MVA 230/33 kV,2023-10-06,Bottom oil,Acetylene,41.92,IMPORTED,Transcribed example; verify original CEA report table before formal citation

@@ -1,5 +1,2 @@
 package com.transformertwin.domain;
-
-public enum MeasurementType {
-    OIL_TEMPERATURE, HOTSPOT_TEMPERATURE, LOAD
-}
+public enum MeasurementType { TOP_OIL_TEMPERATURE, WINDING_HOTSPOT_TEMPERATURE, LOAD_PERCENT, AMBIENT_TEMPERATURE, COOLING_FAN_STATUS }

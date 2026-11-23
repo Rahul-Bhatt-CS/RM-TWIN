@@ -1,8 +1,5 @@
 package com.transformertwin.repository;
-import com.transformertwin.domain.Alert;
-import org.springframework.data.jpa.repository.JpaRepository;
-import java.util.*;
-public interface AlertRepository extends JpaRepository<Alert, Long> {
-    List<Alert> findByTransformerIdOrderByCreatedAtDesc(Long transformerId);
-    Optional<Alert> findTopByTransformerIdAndConditionAndStatusOrderByCreatedAtDesc(Long transformerId, String condition, String status);
+import com.transformertwin.domain.Alert; import org.springframework.data.jpa.repository.JpaRepository; import org.springframework.data.domain.*; import java.util.*;
+public interface AlertRepository extends JpaRepository<Alert,Long> {
+ Page<Alert> findByTransformerIdOrderByCreatedAtDesc(Long transformerId, Pageable pageable); Optional<Alert> findFirstByTransformerIdAndConditionKeyAndStatus(Long transformerId, String conditionKey, String status); long countByTransformerIdAndStatus(Long transformerId, String status);
 }

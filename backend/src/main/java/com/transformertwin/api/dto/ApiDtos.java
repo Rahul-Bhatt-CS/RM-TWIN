@@ -1,42 +1,49 @@
 package com.transformertwin.api.dto;
-
 import com.transformertwin.domain.*;
+import jakarta.validation.constraints.*;
 import java.math.BigDecimal;
-import java.time.Instant;
-import java.util.List;
-
+import java.time.*;
+import java.util.*;
 public final class ApiDtos {
-    private ApiDtos() {}
-    public record TransformerDto(Long id, String name, String assetCode, String rating) {
-        public static TransformerDto from(Transformer t) { return new TransformerDto(t.getId(), t.getName(), t.getAssetCode(), t.getRating()); }
-    }
-    public record ReadingDto(Long id, Long transformerId, String measurementType, BigDecimal value,
-                             String unit, Instant recordedAt, String source) {
-        public static ReadingDto from(SensorReading r) {
-            return new ReadingDto(r.getId(), r.getTransformer().getId(), r.getMeasurementType().name(),
-                    r.getValue(), r.getUnit(), r.getRecordedAt(), r.getSource());
-        }
-    }
-    public record HealthDto(Long id, Long transformerId, String healthStatus, BigDecimal score,
-                            String explanation, Instant assessedAt) {
-        public static HealthDto from(HealthAssessment h) {
-            return new HealthDto(h.getId(), h.getTransformer().getId(), h.getHealthStatus().name(), null,
-                    h.getExplanation(), h.getAssessedAt());
-        }
-    }
-    public record AlertDto(Long id, Long transformerId, String condition, String severity,
-                           BigDecimal observedValue, BigDecimal thresholdValue, String unit,
-                           String status, Instant createdAt) {
-        public static AlertDto from(Alert a, String unit) {
-            return new AlertDto(a.getId(), a.getTransformer().getId(), a.getCondition(), a.getSeverity(),
-                    a.getObservedValue(), a.getThresholdValue(), unit, a.getStatus(), a.getCreatedAt());
-        }
-    }
-    public record DashboardDto(Long transformerId, String assetName, String source, HealthDto health,
-                               Instant lastUpdated, List<ReadingDto> readings, Long activeAlertCount) {}
-    public record HistoryDto(Long transformerId, Instant from, Instant to, List<ReadingDto> readings) {}
-    public record HealthHistoryDto(Long transformerId, List<HealthDto> assessments) {}
-    public record AlertsDto(Long transformerId, List<AlertDto> alerts) {}
-    public record LatestReadingsDto(Long transformerId, String source, List<ReadingDto> readings) {}
-    public record LiveEvent(String eventType, DashboardDto dashboard, AlertDto alert) {}
+ private ApiDtos(){}
+ public record TransformerCreate(
+  @NotBlank @Size(max=120) String name,
+  @NotBlank @Pattern(regexp="[A-Za-z0-9._-]{2,60}") String assetCode,
+  @Size(max=120) String manufacturer,@Size(max=120) String model,@Size(max=100) String serialNumber,
+  @DecimalMin("0.01") @DecimalMax("2000") BigDecimal voltageClassKv,
+  @DecimalMin("0.01") @DecimalMax("10000") BigDecimal ratedPowerMva,
+  @Size(max=40) String coolingType,@Size(max=60) String insulationType,
+  LocalDate commissioningDate,@Size(max=180) String location,@Size(max=1000) String description,
+  Boolean simulationEnabled) {}
+ public record TransformerView(Long id,String name,String assetCode,String manufacturer,String model,String serialNumber,
+  BigDecimal voltageClassKv,BigDecimal ratedPowerMva,String coolingType,String insulationType,LocalDate commissioningDate,
+  String location,String description,boolean simulationEnabled,Instant createdAt,Instant updatedAt) {
+  public static TransformerView from(Transformer t){return new TransformerView(t.getId(),t.getName(),t.getAssetCode(),t.getManufacturer(),t.getModel(),t.getSerialNumber(),t.getVoltageClassKv(),t.getRatedPowerMva(),t.getCoolingType(),t.getInsulationType(),t.getCommissioningDate(),t.getLocation(),t.getDescription(),t.isSimulationEnabled(),t.getCreatedAt(),t.getUpdatedAt());}
+ }
+ public record ReadingView(Long id,Long transformerId,String measurementType,BigDecimal value,String unit,String source,Instant recordedAt) {
+  public static ReadingView from(SensorReading r){return new ReadingView(r.getId(),r.getTransformer().getId(),r.getMeasurementType().name(),r.getValue(),r.getUnit(),r.getSource().name(),r.getRecordedAt());}
+ }
+ public record ComponentView(String key,String label,BigDecimal score,BigDecimal weight,String state,String explanation) {
+  public static ComponentView from(HealthComponentScore c){return new ComponentView(c.getComponentKey(),c.getComponentLabel(),c.getScore(),c.getWeight(),c.getState(),c.getExplanation());}
+ }
+ public record HealthView(Long id,Long transformerId,String status,BigDecimal healthIndex,BigDecimal coverage,String explanation,Instant assessedAt,List<ComponentView> components) {
+  public static HealthView from(HealthAssessment h){return new HealthView(h.getId(),h.getTransformer().getId(),h.getHealthStatus(),h.getHealthIndex(),h.getCoverage(),h.getExplanation(),h.getAssessedAt(),h.getComponents().stream().map(ComponentView::from).toList());} public static HealthView summary(HealthAssessment h){return new HealthView(h.getId(),h.getTransformer().getId(),h.getHealthStatus(),h.getHealthIndex(),h.getCoverage(),h.getExplanation(),h.getAssessedAt(),List.of());}
+ }
+ public record AlertView(Long id,Long transformerId,String conditionKey,String title,String message,String severity,String status,BigDecimal observedValue,String unit,Instant createdAt,Instant resolvedAt) {
+  public static AlertView from(Alert a){return new AlertView(a.getId(),a.getTransformer().getId(),a.getConditionKey(),a.getTitle(),a.getMessage(),a.getSeverity(),a.getStatus(),a.getObservedValue(),a.getUnit(),a.getCreatedAt(),a.getResolvedAt());}
+ }
+ public record DiagnosticCreate(@NotBlank @Size(max=60) String testType,@NotBlank @Size(max=80) String parameterName,
+  @NotNull @DecimalMin("-1000000") @DecimalMax("1000000") BigDecimal value,@NotBlank @Size(max=20) String unit,
+  @NotNull Instant testDate,@Size(max=160) String laboratory,@Size(max=500) String referenceNote,@Size(max=1000) String notes) {}
+ public record DiagnosticView(Long id,Long transformerId,String testType,String parameterName,BigDecimal value,String unit,Instant testDate,String source,String laboratory,String referenceNote,String notes) {
+  public static DiagnosticView from(DiagnosticTest d){return new DiagnosticView(d.getId(),d.getTransformer().getId(),d.getTestType(),d.getParameterName(),d.getValue(),d.getUnit(),d.getTestDate(),d.getSource().name(),d.getLaboratory(),d.getReferenceNote(),d.getNotes());}
+ }
+ public record ProtectionCreate(@NotBlank @Size(max=80) String deviceName,@NotBlank @Size(max=40) String eventType,boolean active,@NotNull Instant occurredAt,@Size(max=500) String notes){}
+ public record ProtectionView(Long id,Long transformerId,String deviceName,String eventType,boolean active,Instant occurredAt,String source,String notes){
+  public static ProtectionView from(ProtectionEvent p){return new ProtectionView(p.getId(),p.getTransformer().getId(),p.getDeviceName(),p.getEventType(),p.isActive(),p.getOccurredAt(),p.getSource().name(),p.getNotes());}
+ }
+ public record Dashboard(TransformerView transformer,HealthView health,List<ReadingView> latestReadings,long activeAlerts,Instant lastUpdated){}
+ public record PageResponse<T>(List<T> content,int page,int size,long totalElements,int totalPages,boolean first,boolean last){}
+ public static <A,B> PageResponse<B> page(org.springframework.data.domain.Page<A> p,java.util.function.Function<A,B> map){return new PageResponse<>(p.getContent().stream().map(map).toList(),p.getNumber(),p.getSize(),p.getTotalElements(),p.getTotalPages(),p.isFirst(),p.isLast());}
+ public record ErrorResponse(String code,String message,Instant timestamp){}
 }

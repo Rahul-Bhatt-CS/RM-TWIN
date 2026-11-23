@@ -1,42 +1,9 @@
-export type Reading = {
-  id: number;
-  transformerId: number;
-  measurementType: 'OIL_TEMPERATURE' | 'HOTSPOT_TEMPERATURE' | 'LOAD';
-  value: number;
-  unit: string;
-  recordedAt: string;
-  source: 'SIMULATED';
-};
-export type Health = {
-  id: number;
-  transformerId: number;
-  healthStatus: 'NORMAL' | 'WARNING' | 'CRITICAL' | 'UNAVAILABLE';
-  score: number | null;
-  explanation: string;
-  assessedAt: string;
-};
-export type Alert = {
-  id: number;
-  transformerId: number;
-  condition: string;
-  severity: string | null;
-  observedValue: number | null;
-  thresholdValue: number | null;
-  unit: string | null;
-  status: string | null;
-  createdAt: string;
-};
-export type Transformer = { id: number; name: string; assetCode: string | null; rating: string | null };
-export type Dashboard = {
-  transformerId: number;
-  assetName: string;
-  source: string;
-  health: Health | null;
-  lastUpdated: string | null;
-  readings: Reading[];
-  activeAlertCount: number | null;
-};
-export type HistoryResponse = { transformerId: number; from: string; to: string; readings: Reading[] };
-export type HealthHistoryResponse = { transformerId: number; assessments: Health[] };
-export type AlertsResponse = { transformerId: number; alerts: Alert[] };
-export type LiveEvent = { eventType: string; dashboard: Dashboard; alert: Alert | null };
+export type Page<T> = { content:T[]; page:number; size:number; totalElements:number; totalPages:number; first:boolean; last:boolean };
+export type Transformer = { id:number; name:string; assetCode:string; manufacturer?:string|null; model?:string|null; serialNumber?:string|null; voltageClassKv?:number|null; ratedPowerMva?:number|null; coolingType?:string|null; insulationType?:string|null; commissioningDate?:string|null; location?:string|null; description?:string|null; simulationEnabled:boolean; createdAt:string; updatedAt:string };
+export type Reading = { id:number; transformerId:number; measurementType:string; value:number; unit:string; source:string; recordedAt:string };
+export type Component = { key:string; label:string; score:number|null; weight:number; state:string; explanation:string };
+export type Health = { id:number; transformerId:number; status:string; healthIndex:number|null; coverage:number; explanation:string; assessedAt:string; components:Component[] };
+export type Alert = { id:number; transformerId:number; conditionKey:string; title:string; message:string; severity:string; status:string; observedValue:number|null; unit:string|null; createdAt:string; resolvedAt:string|null };
+export type Diagnostic = { id:number; transformerId:number; testType:string; parameterName:string; value:number; unit:string; testDate:string; source:string; laboratory:string|null; referenceNote:string|null; notes:string|null };
+export type Protection = { id:number; transformerId:number; deviceName:string; eventType:string; active:boolean; occurredAt:string; source:string; notes:string|null };
+export type Dashboard = { transformer:Transformer; health:Health|null; latestReadings:Reading[]; activeAlerts:number; lastUpdated:string|null };
