@@ -214,3 +214,15 @@ The simulator now derives apparent MVA and balanced three-phase HV/LV line curre
 
 ### 3D viewer runtime dependency
 The 3D view uses the Web Component `model-viewer` 4.0.0 loaded from the Google AJAX CDN in `frontend/index.html`. The model file is local at `frontend/public/models/transformer_100mva_220_33kv.glb`. A network connection is required for the viewer library unless you vendor that library locally.
+
+
+## Component-level inspection additions
+- Diagnostic entries support `componentKey` and optional `phase`; use `HV_BUSHING` with phase `A`, `B`, or `C`, or `LV_BUSHING` with phase `a`, `b`, or `c` for bushing test history.
+- Supported component keys: `MAIN_TANK`, `CONSERVATOR`, `HV_BUSHING`, `LV_BUSHING`, `RADIATOR`, `COOLING_FAN`, `OLTC`, `CONTROL_CABINET`.
+- Simulated auxiliary telemetry includes cooling fan/pump status, oil level, radiator outlet temperature, OLTC tap position, demonstration operation count and motor-current pulse.
+- These auxiliary signals are scripted demo values. They are not manufacturer-calibrated control behaviour.
+- A genuine IEC 60076-7 thermal model remains gated on OEM thermal constants and engineering validation; the current scripted thermal cycle must not be represented as standards-compliant thermal prediction.
+
+
+## Important security boundary
+This demonstration intentionally has no administrator token or authentication because that was requested. Write endpoints are unauthenticated. Keep the backend on localhost or a trusted private network; do not expose it publicly. Before public deployment, add proper identity, role-based authorization, rate limiting, audit trails and TLS. CORS is not authentication.

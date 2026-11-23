@@ -57,3 +57,9 @@ No administrator token is present, as requested. The API's write endpoints are t
 - IEC 60137:2017: https://webstore.iec.ch/en/publication/29183
 - IEC 60214-1:2014: https://webstore.iec.ch/en/publication/1032
 - IEC 60076-18:2012: https://webstore.iec.ch/en/publication/597
+
+
+## Implementation boundary after component-level extension
+The implementation adds component/phase provenance for imported diagnostic results and demo telemetry for cooling auxiliaries and OLTC. These are data-model and visualization improvements, not a claim that the simulator reproduces IEC test procedures or OLTC controller logic. IEC 60076-7 requires transformer-specific thermal parameters and operating context; these are not present in the selected CEA rating row. Therefore the application deliberately does not label its scripted temperature sequence as an IEC 60076-7 thermal model. To enable that model, collect OEM/GTP values for rated top-oil rise, winding hot-spot gradient, oil and winding time constants, exponent and cooling arrangement, then validate the implementation with an electrical/transformer engineer.
+
+Component-linked diagnostic records are not the same as physical sensor placement. The `componentKey` and `phase` fields identify which component/phase a laboratory or field test concerns.

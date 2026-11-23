@@ -28,3 +28,9 @@ Flyway migration: `backend/src/main/resources/db/migration/V1__initial_schema.sq
 ## V2 reference-profile fields
 
 Flyway migration `V2__reference_transformer_profile.sql` adds `lv_voltage_kv`, `rated_frequency_hz` and `reference_profile` to `transformer`. The default profile ID is `CEA-100MVA-220-33KV-3PH`.
+
+
+## V3 migration — component-linked diagnostic records
+`diagnostic_test.component_key` and `diagnostic_test.phase` are nullable so older records remain valid. `component_key` identifies the selected inspection area; `phase` identifies a bushing phase when relevant. The index `(transformer_id, component_key, phase)` supports component/phase lookups.
+
+New `sensor_reading.measurement_type` values include `COOLING_PUMP_STATUS`, `RADIATOR_OUTLET_TEMPERATURE`, `OIL_LEVEL_PERCENT`, `OLTC_TAP_POSITION`, `OLTC_OPERATION_COUNT` and `OLTC_MOTOR_CURRENT_A`. Values remain in the existing sensor_reading table with `SIMULATED` provenance.

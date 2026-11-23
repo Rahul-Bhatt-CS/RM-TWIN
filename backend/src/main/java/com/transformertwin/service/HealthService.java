@@ -29,6 +29,16 @@ public class HealthService {
    if(v.compareTo(warningLoad)>=0){warningDetected=true;alerts.raise(t,"LOAD_HIGH","High loading","Load crossed the configured demonstration trigger; duration and transformer loading guide are not modelled.","WARNING",v,"%");}else alerts.resolve(t,"LOAD_HIGH");
   }
   if(oil.isPresent()){thermalEvidence.add("Top oil "+oil.get().getValue()+" °C");}
+  Optional<SensorReading> fan=latest(t,MeasurementType.COOLING_FAN_STATUS);
+  if(fan.isPresent() && fan.get().getValue().compareTo(BigDecimal.ZERO)==0 && hot.isPresent() && hot.get().getValue().compareTo(warningHotspot)>=0){
+   warningDetected=true;
+   alerts.raise(t,"COOLING_ASSIST_UNAVAILABLE","Cooling fan not running during elevated hot-spot scenario","The demonstration simulator reports fan OFF while the hot-spot is above its configured demo warning trigger. Verify actual cooling requirements and auxiliary status on site.","WARNING",fan.get().getValue(),"ON=1 / OFF=0");
+  } else { alerts.resolve(t,"COOLING_ASSIST_UNAVAILABLE"); }
+  Optional<SensorReading> pump=latest(t,MeasurementType.COOLING_PUMP_STATUS);
+  if(pump.isPresent() && pump.get().getValue().compareTo(BigDecimal.ZERO)==0){
+   warningDetected=true;
+   alerts.raise(t,"COOLING_PUMP_UNAVAILABLE","Cooling pump reported OFF","The demonstration telemetry reports pump OFF. Applicability depends on the installed cooling design.","WARNING",pump.get().getValue(),"ON=1 / OFF=0");
+  } else { alerts.resolve(t,"COOLING_PUMP_UNAVAILABLE"); }
   if(!thermalScores.isEmpty()){BigDecimal s=average(thermalScores);parts.add(part("THERMAL","Thermal and loading",s,"0.25","ASSESSED",String.join("; ",thermalEvidence)+". Illustrative rule scores only."));weighted=weighted.add(s.multiply(new BigDecimal("0.25")));coverage=coverage.add(new BigDecimal("0.25"));}
   else parts.add(part("THERMAL","Thermal and loading",null,"0.25","UNKNOWN","No current thermal or load readings."));
   List<DiagnosticTest> tests=diagnostics.findTop100ByTransformerIdOrderByTestDateDesc(t.getId());

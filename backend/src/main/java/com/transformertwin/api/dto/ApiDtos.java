@@ -36,9 +36,10 @@ public final class ApiDtos {
  }
  public record DiagnosticCreate(@NotBlank @Size(max=60) String testType,@NotBlank @Size(max=80) String parameterName,
   @NotNull @DecimalMin("-1000000") @DecimalMax("1000000") BigDecimal value,@NotBlank @Size(max=20) String unit,
-  @NotNull Instant testDate,@Size(max=160) String laboratory,@Size(max=500) String referenceNote,@Size(max=1000) String notes) {}
- public record DiagnosticView(Long id,Long transformerId,String testType,String parameterName,BigDecimal value,String unit,Instant testDate,String source,String laboratory,String referenceNote,String notes) {
-  public static DiagnosticView from(DiagnosticTest d){return new DiagnosticView(d.getId(),d.getTransformer().getId(),d.getTestType(),d.getParameterName(),d.getValue(),d.getUnit(),d.getTestDate(),d.getSource().name(),d.getLaboratory(),d.getReferenceNote(),d.getNotes());}
+  @NotNull Instant testDate,@Size(max=160) String laboratory,@Size(max=500) String referenceNote,@Size(max=1000) String notes,
+  @Pattern(regexp="MAIN_TANK|CONSERVATOR|HV_BUSHING|LV_BUSHING|RADIATOR|COOLING_FAN|OLTC|CONTROL_CABINET") String componentKey,@Pattern(regexp="A|B|C|a|b|c") String phase) {}
+ public record DiagnosticView(Long id,Long transformerId,String testType,String parameterName,BigDecimal value,String unit,Instant testDate,String source,String laboratory,String referenceNote,String notes,String componentKey,String phase) {
+  public static DiagnosticView from(DiagnosticTest d){return new DiagnosticView(d.getId(),d.getTransformer().getId(),d.getTestType(),d.getParameterName(),d.getValue(),d.getUnit(),d.getTestDate(),d.getSource().name(),d.getLaboratory(),d.getReferenceNote(),d.getNotes(),d.getComponentKey(),d.getPhase());}
  }
  public record ProtectionCreate(@NotBlank @Size(max=80) String deviceName,@NotBlank @Size(max=40) String eventType,boolean active,@NotNull Instant occurredAt,@Size(max=500) String notes){}
  public record ProtectionView(Long id,Long transformerId,String deviceName,String eventType,boolean active,Instant occurredAt,String source,String notes){

@@ -10,6 +10,9 @@
 - Model-viewer integration with orbit, zoom, pan/touch and eight numbered clickable inspection hotspots.
 - Numbered areas map to existing health groups and show available transformer-level evidence; not individual sensor-placement claims.
 - SSE dashboard events, demo alerts, diagnostic record entry, protection-event entry and server-side pagination remain in place.
+- Diagnostic records now carry optional stable component keys and phase identifiers (HV A/B/C, LV a/b/c), so bushing test results can be tied to a selected 3D inspection area and phase.
+- Simulator now emits cooling pump state, oil level, radiator outlet temperature, OLTC tap position, demonstration operation count and OLTC motor-current pulse, in addition to existing measurements.
+- 3D inspector now loads paginated diagnostic/protection records and filters component-linked diagnostic results; bushing phase is shown when recorded.
 - DGA and moisture results are stored but not automatically diagnosed/scored without an approved interpretation method and context.
 - Flyway V2 adds LV voltage, rated frequency and reference-profile fields.
 - Administrator-token system remains removed; write APIs are unauthenticated in this demo.
@@ -21,11 +24,13 @@
 - Demo alert thresholds are not CEA/IEC/IEEE/OEM alarm or trip limits.
 - Health index is not an official standards formula. Unknown diagnostic groups remain unknown; no DGA diagnosis is inferred.
 - No SCADA, live sensors, protection relay control, breaker control or safety certification.
+- OLTC/cooling auxiliary signals are scripted demonstration telemetry, not calibrated device models or manufacturer-specific controller logic.
+- A standards-conformant IEC 60076-7 thermal model is not enabled because OEM thermal constants (rated top-oil rise, winding hot-spot gradient, time constants, exponent and cooling data) are not supplied. The scripted thermal scenario remains explicitly illustrative.
 - GLB is procedural conceptual geometry, not OEM CAD and not a verified sensor-location drawing.
 - Google model-viewer 4.0.0 is loaded from a pinned CDN URL; browser internet is required for that library unless vendored locally.
 
 ## Verification
-- Java 21 and Node 22 are available in the authoring environment; Maven is not installed.
+- Java 21 and Node 22 are available in the authoring environment; Maven is not installed. npm dependency installation timed out; the extracted dependency tree is incomplete.
 - Frontend dependencies in the archived environment are incomplete; `npx tsc -b` cannot be used here because type packages are missing. `npm install` timed out.
 - Backend compilation/tests were not run because Maven is unavailable.
 - GLB file was reopened with trimesh: 165 geometries; bounds approximately X [-2.34, 2.74], Y [0.13, 3.41], Z [-1.00, 1.33] metres.

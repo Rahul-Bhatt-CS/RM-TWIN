@@ -74,3 +74,7 @@ Before operational use, have a transformer domain engineer approve:
 5. Test recency and data-quality rules.
 6. Health group weights, missing-data handling and critical overrides.
 7. Validation against known transformer failure/maintenance histories.
+
+
+## Auxiliary demonstration alerts
+The simulator includes a scripted fan-OFF period during an elevated-hot-spot scenario. The backend raises a warning when fan state is OFF while the hot-spot exceeds the configured demo warning trigger. A pump-OFF state also raises a warning. These are scenario logic checks only: fan/pump applicability and alarm settings depend on the actual cooling design and OEM control philosophy. Oil-level values are displayed but not thresholded because no transformer-specific alarm setting is configured. OLTC tap/operation/motor signals are demonstration telemetry and are not interpreted as OLTC faults.

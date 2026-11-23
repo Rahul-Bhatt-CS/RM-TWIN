@@ -22,11 +22,18 @@ public class SimulationService {
   double ratedMva=t.getRatedPowerMva().doubleValue();
   double hvKv=t.getVoltageClassKv().doubleValue();
   double lvKv=t.getLvVoltageKv().doubleValue();
-  double apparentMva=ratedMva*load/100.0;
-  double hvCurrentA=apparentMva*1000.0/(Math.sqrt(3.0)*hvKv);
-  double lvCurrentA=apparentMva*1000.0/(Math.sqrt(3.0)*lvKv);
+  double apparentMva=ElectricalCalculations.apparentPowerMva(ratedMva,load);
+  double hvCurrentA=ElectricalCalculations.balancedLineCurrentA(apparentMva,hvKv);
+  double lvCurrentA=ElectricalCalculations.balancedLineCurrentA(apparentMva,lvKv);
   // Fan state is a scripted demo scenario, not a manufacturer WTI control setting.
-  double fanStatus=(phase>=12&&phase<36)?1.0:0.0;
+  double fanStatus=(phase>=12&&phase<30)?1.0:0.0; // scripted late-stress cooling-assist failure scenario
+  // Demonstration auxiliary/OLTC signals. These are scripted telemetry, not OEM control logic.
+  double pumpStatus=1.0;
+  double oilLevel=96.0-((phase>=24&&phase<36)?1.5:0.0);
+  double radiatorOutlet=Math.max(ambient+5.0,oil-8.0);
+  double tapPosition=(phase/8)%5-2;
+  double operationCount=n/48;
+  double motorCurrent=(n%48==0)?4.2:0.0;
   readings.save(new SensorReading(t,MeasurementType.TOP_OIL_TEMPERATURE,bd(oil),"°C",DataSourceType.SIMULATED,now));
   readings.save(new SensorReading(t,MeasurementType.WINDING_HOTSPOT_TEMPERATURE,bd(hot),"°C",DataSourceType.SIMULATED,now));
   readings.save(new SensorReading(t,MeasurementType.LOAD_PERCENT,bd(load),"%",DataSourceType.SIMULATED,now));
@@ -35,6 +42,12 @@ public class SimulationService {
   readings.save(new SensorReading(t,MeasurementType.HV_LINE_CURRENT_A,bd(hvCurrentA),"A",DataSourceType.SIMULATED,now));
   readings.save(new SensorReading(t,MeasurementType.LV_LINE_CURRENT_A,bd(lvCurrentA),"A",DataSourceType.SIMULATED,now));
   readings.save(new SensorReading(t,MeasurementType.COOLING_FAN_STATUS,bd(fanStatus),"ON=1 / OFF=0",DataSourceType.SIMULATED,now));
+  readings.save(new SensorReading(t,MeasurementType.COOLING_PUMP_STATUS,bd(pumpStatus),"ON=1 / OFF=0",DataSourceType.SIMULATED,now));
+  readings.save(new SensorReading(t,MeasurementType.OIL_LEVEL_PERCENT,bd(oilLevel),"%",DataSourceType.SIMULATED,now));
+  readings.save(new SensorReading(t,MeasurementType.RADIATOR_OUTLET_TEMPERATURE,bd(radiatorOutlet),"°C",DataSourceType.SIMULATED,now));
+  readings.save(new SensorReading(t,MeasurementType.OLTC_TAP_POSITION,bd(tapPosition),"position",DataSourceType.SIMULATED,now));
+  readings.save(new SensorReading(t,MeasurementType.OLTC_OPERATION_COUNT,bd(operationCount),"operations (demo counter)",DataSourceType.SIMULATED,now));
+  readings.save(new SensorReading(t,MeasurementType.OLTC_MOTOR_CURRENT_A,bd(motorCurrent),"A",DataSourceType.SIMULATED,now));
   var assessment=health.assess(t);realtime.publish(t.getId(),transformerService.dashboard(t.getId()));
  }}
  private BigDecimal bd(double d){return BigDecimal.valueOf(d).setScale(2,java.math.RoundingMode.HALF_UP);}

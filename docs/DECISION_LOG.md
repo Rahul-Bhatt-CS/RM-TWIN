@@ -17,3 +17,13 @@
 - ADR-022: Generate a detailed local GLB procedural model and use model-viewer for real 3D orbit/zoom plus eight numbered inspection hotspots. Hotspots map to condition groups, not asserted sensor locations.
 - ADR-023: Extend nameplate with LV voltage, rated frequency and reference profile; derive apparent MVA and balanced HV/LV line current from S=√3VI using nominal voltage. These remain simulated/idealized values.
 - ADR-024: Keep demo alert thresholds explicitly labelled as software test triggers, not CEA/IEC/IEEE/OEM settings. Do not score DGA or moisture automatically without approved interpretation and context.
+
+
+## ADR-024 — component/phase diagnostic linkage
+Diagnostic tests may be associated with a stable component key and optional phase. This enables phase-specific bushing history without claiming physical sensor positions. Legacy asset-level records remain valid.
+
+## ADR-025 — auxiliary telemetry demonstration
+Cooling pump/fan state, oil level, radiator outlet temperature and OLTC signals are generated as explicitly scripted demo telemetry. They are not OEM controller models and are not scored as certified condition assessments.
+
+## ADR-026 — thermal model validation gate
+Do not claim IEC 60076-7 compliance until OEM/GTP thermal parameters and validation data are available. Retain scripted thermal scenarios as demo mode until then.

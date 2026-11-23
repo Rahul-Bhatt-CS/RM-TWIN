@@ -22,14 +22,18 @@ There is no token or authentication check in this prototype. POST endpoints are 
 - Asset code: 2–60 characters, `[A-Za-z0-9._-]`, unique.
 - Names and text fields have explicit maximum lengths.
 - Numeric nameplate values are bounded.
-- Diagnostic value/date/unit are required.
+- Diagnostic value/date/unit are required. Optional `componentKey` associates a test with a stable 3D inspection area; optional `phase` supports HV A/B/C and LV a/b/c bushing records.
 - Page index must be non-negative; size 1–100.
 - Unknown transformer returns 404; validation errors return 400; duplicate/conflict returns 409.
 - Unexpected errors return generic 500 response without stack traces or SQL details.
 
 ## Future API
-`GET /transformers/{id}/parts` may return 3D part metadata and stable component keys. It is not implemented in v2.
+`componentKey` values currently supported on diagnostic records: `MAIN_TANK`, `CONSERVATOR`, `HV_BUSHING`, `LV_BUSHING`, `RADIATOR`, `COOLING_FAN`, `OLTC`, `CONTROL_CABINET`. Phase is optional and limited to A/B/C/a/b/c. A future `GET /transformers/{id}/parts` can return the same mapping plus model-node metadata.
 
 ## Transformer nameplate profile additions
 
-Transformer create/read contracts include `lvVoltageKv`, `ratedFrequencyHz` and `referenceProfile`. The fixed default profile `CEA-100MVA-220-33KV-3PH` requires 100 MVA, 220 kV HV, 33 kV LV and 50 Hz. The simulator derives `APPARENT_POWER_MVA`, `HV_LINE_CURRENT_A`, `LV_LINE_CURRENT_A` and `COOLING_FAN_STATUS` readings. These derived/simulated values are labelled `SIMULATED` and are not live CT/SCADA measurements.
+Transformer create/read contracts include `lvVoltageKv`, `ratedFrequencyHz` and `referenceProfile`. The fixed default profile `CEA-100MVA-220-33KV-3PH` requires 100 MVA, 220 kV HV, 33 kV LV and 50 Hz. The simulator derives `APPARENT_POWER_MVA`, `HV_LINE_CURRENT_A`, `LV_LINE_CURRENT_A`, cooling fan/pump state, oil level, radiator outlet temperature, OLTC tap position, demonstration operation count and motor-current pulse readings. These derived/simulated values are labelled `SIMULATED` and are not live CT/SCADA measurements.
+
+
+### Component-linked diagnostic example
+`POST /api/transformers/{id}/diagnostics` accepts optional `componentKey` and `phase`, for example `{"testType":"BUSHING_TEST","parameterName":"TAN_DELTA","value":0.0042,"unit":"pu","testDate":"2026-11-23T10:00:00Z","componentKey":"HV_BUSHING","phase":"A"}`. The record is an imported test result; it is not automatically judged against a universal limit.
