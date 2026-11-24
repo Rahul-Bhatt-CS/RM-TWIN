@@ -7,9 +7,11 @@ public class HealthAssessment {
  @Column(nullable=false,length=20) private String healthStatus; @Column(precision=6,scale=2) private BigDecimal healthIndex;
  @Column(nullable=false,precision=5,scale=4) private BigDecimal coverage;
  @Column(nullable=false,length=1500) private String explanation; @Column(nullable=false) private Instant assessedAt;
+ @Column(name="assessment_hour",nullable=false) private Instant assessmentHour;
  @OneToMany(mappedBy="assessment",cascade=CascadeType.ALL,orphanRemoval=true) private List<HealthComponentScore> components=new ArrayList<>();
  protected HealthAssessment(){}
- public HealthAssessment(Transformer t,String status,BigDecimal index,BigDecimal coverage,String explanation,Instant at){this.transformer=t;this.healthStatus=status;this.healthIndex=index;this.coverage=coverage;this.explanation=explanation;this.assessedAt=at;}
+ public HealthAssessment(Transformer t,String status,BigDecimal index,BigDecimal coverage,String explanation,Instant at){this.transformer=t;this.healthStatus=status;this.healthIndex=index;this.coverage=coverage;this.explanation=explanation;this.assessedAt=at;this.assessmentHour=at.truncatedTo(java.time.temporal.ChronoUnit.HOURS);}
+ public void replaceWith(String status,BigDecimal index,BigDecimal coverage,String explanation,Instant at){this.healthStatus=status;this.healthIndex=index;this.coverage=coverage;this.explanation=explanation;this.assessedAt=at;this.components.clear();}
  public void addComponent(HealthComponentScore c){components.add(c);c.setAssessment(this);}
- public Long getId(){return id;} public Transformer getTransformer(){return transformer;} public String getHealthStatus(){return healthStatus;} public BigDecimal getHealthIndex(){return healthIndex;} public BigDecimal getCoverage(){return coverage;} public String getExplanation(){return explanation;} public Instant getAssessedAt(){return assessedAt;} public List<HealthComponentScore> getComponents(){return components;}
+ public Long getId(){return id;} public Transformer getTransformer(){return transformer;} public String getHealthStatus(){return healthStatus;} public BigDecimal getHealthIndex(){return healthIndex;} public BigDecimal getCoverage(){return coverage;} public String getExplanation(){return explanation;} public Instant getAssessedAt(){return assessedAt;} public Instant getAssessmentHour(){return assessmentHour;} public List<HealthComponentScore> getComponents(){return components;}
 }

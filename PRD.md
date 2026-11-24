@@ -24,7 +24,7 @@ A web application for registering transformers and reviewing their simulated ope
 
 ### D. Review alerts and history
 - Alerts are created from configured demonstration triggers and diagnostic evidence; protection-event functionality is out of scope and removed.
-- Readings, diagnostics, alerts and maintenance records are returned in pages. Only the latest health assessment is retained and shown on the dashboard.
+- Readings, diagnostics, alerts and maintenance records are returned in pages. Hourly health assessments are retained and shown as a trend on the dashboard.
 - Page size is bounded to 100.
 
 ### E. Review health index

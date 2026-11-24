@@ -13,7 +13,7 @@ A transformer-monitoring demonstration built with **Java 21 + Spring Boot + MySQ
 - Rule-triggered demonstration alerts for configured hot-spot/load triggers.
 - Add imported diagnostic records (e.g. DGA gases, moisture, BDV, tan delta) with date, unit, source notes and lab.
 - Health index shows component groups, data coverage, missing data and explanations. DGA gases are stored but not automatically diagnosed.
-- Server-side pagination for readings, alerts, diagnostics and maintenance records. The dashboard retains only the latest health assessment.
+- Server-side pagination for readings, alerts, diagnostics and maintenance records. The dashboard retains hourly health assessments and displays their trend.
 - SSE dashboard updates.
 - Flyway database migration; Hibernate validates rather than silently changing production schema.
 
@@ -23,7 +23,7 @@ A transformer-monitoring demonstration built with **Java 21 + Spring Boot + MySQ
 React + TypeScript
   ├── Fleet / add transformer
   ├── Transformer dashboard
-  ├── Raw/aggregated readings, diagnostic workspaces, alerts, maintenance
+  ├── Raw sensor readings, hourly health history, diagnostics, alerts and maintenance
   └── SSE client
           │ REST + SSE
 Spring Boot modular monolith
@@ -234,9 +234,15 @@ Synthetic diagnostic history is seeded once per transformer. Continuous simulate
 
 ## Engineering improvement update (November 2026)
 
-See `docs/EXECUTION_PLAN_AND_IMPLEMENTATION.md` for the research basis, implementation phases, migration notes, configuration defaults, limitations and verification status. The current simulator uses a simplified load-responsive first-order thermal model; its default parameters are demonstration assumptions, not OEM data. DGA values and ratios are presented as evidence for review and are not automatically classified into definitive faults. Protection-event functionality and protection scoring have been removed. Diagnostic records support optional method/sample/test-condition/baseline metadata. Maintenance history and hourly telemetry roll-up are available.
+See `docs/EXECUTION_PLAN_AND_IMPLEMENTATION.md` for the research basis, implementation phases, migration notes, configuration defaults, limitations and verification status. The current simulator uses a simplified load-responsive first-order thermal model; its default parameters are demonstration assumptions, not OEM data. DGA values and ratios are presented as evidence for review and are not automatically classified into definitive faults. Protection-event functionality and protection scoring have been removed. Diagnostic records support optional method/sample/test-condition/baseline metadata. Maintenance history and hourly health snapshots are available; sensor history remains raw.
 
-New database migrations V6-V16 are applied automatically by Flyway. They add diagnostic context, hourly aggregates, maintenance links, persisted simulation state, DGA sample identity and alert lifecycle fields, sensor-channel mapping and remove the legacy protection-event table. Keep the existing database and do not edit earlier migrations. Authentication, authorization and security configuration have intentionally not been changed in this update.
+New database migrations V6-V18 are applied automatically by Flyway. They add diagnostic context, maintenance links, persisted simulation state, DGA sample identity and alert lifecycle fields, sensor-channel mapping, remove the legacy protection-event table and sensor-hourly table, retain hourly health snapshots, and add durable alert notifications. Keep the existing database and do not edit earlier migrations. Authentication, authorization and security configuration have intentionally not been changed in this update.
 
 ## Transformer engineering configuration
-The asset-registration form accepts OEM thermal constants, cooling-stage configuration and sensor-channel mappings. Sensor mapping JSON keys must match the backend `MeasurementType` enum; for example `{"TOP_OIL_TEMPERATURE":"OTI-01","WINDING_HOTSPOT_TEMPERATURE":"WTI-01"}`. Mapped channel IDs are stored with raw readings and hourly aggregates. These fields configure the demonstration model; they do not represent an actual connected sensor gateway.
+The asset-registration form accepts OEM thermal constants, cooling-stage configuration and sensor-channel mappings. Sensor mapping JSON keys must match the backend `MeasurementType` enum; for example `{"TOP_OIL_TEMPERATURE":"OTI-01","WINDING_HOTSPOT_TEMPERATURE":"WTI-01"}`. Mapped channel IDs are stored with raw readings. These fields configure the demonstration model; they do not represent an actual connected sensor gateway.
+
+### Persistence and history behaviour
+- Sensor history is stored as raw rows in `sensor_reading`; there is no sensor-hourly aggregate table or roll-up job. Raw simulated readings are not automatically purged by the application.
+- Health assessments are stored once per transformer per UTC hour in `health_assessment`, with category evidence, coverage and explanation. The current hour's row may be refreshed as new evaluation evidence arrives.
+- Alerts are persisted in `alert`; each newly raised alert episode also creates a durable `alert_notification` row. The UI polls the notification feed and can optionally use browser notifications when permission is granted.
+- Simulation measurements and seeded diagnostic records are database-backed. Simulation progression variables are persisted on the transformer record.

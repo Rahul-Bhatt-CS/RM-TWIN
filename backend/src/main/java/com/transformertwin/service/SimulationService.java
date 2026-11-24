@@ -21,7 +21,7 @@ import java.time.temporal.ChronoUnit;
 public class SimulationService {
  private final TransformerRepository transformers; private final SensorReadingRepository readings;
  private final DiagnosticTestRepository diagnostics;
- private final HealthService health; private final RealtimeService realtime; private final TransformerService transformerService; private final com.fasterxml.jackson.databind.ObjectMapper objectMapper;
+ private final RealtimeService realtime; private final TransformerService transformerService; private final com.fasterxml.jackson.databind.ObjectMapper objectMapper;
  @Value("${app.simulation.enabled:true}") private boolean enabled;
  @Value("${app.simulation.interval-ms:5000}") private long intervalMs;
  @Value("${app.simulation.virtual-minutes-per-tick:1}") private double virtualMinutes;
@@ -32,7 +32,7 @@ public class SimulationService {
  @Value("${app.thermal.loss-ratio:5}") private double lossRatio;
  @Value("${app.thermal.oil-exponent:0.8}") private double oilExponent;
  @Value("${app.thermal.winding-exponent:1.6}") private double windingExponent;
- public SimulationService(TransformerRepository t,SensorReadingRepository r,DiagnosticTestRepository d,HealthService h,RealtimeService rt,TransformerService ts,com.fasterxml.jackson.databind.ObjectMapper objectMapper){transformers=t;readings=r;diagnostics=d;health=h;realtime=rt;transformerService=ts;this.objectMapper=objectMapper;}
+ public SimulationService(TransformerRepository t,SensorReadingRepository r,DiagnosticTestRepository d,RealtimeService rt,TransformerService ts,com.fasterxml.jackson.databind.ObjectMapper objectMapper){transformers=t;readings=r;diagnostics=d;realtime=rt;transformerService=ts;this.objectMapper=objectMapper;}
  @EventListener(ApplicationReadyEvent.class) @Transactional public void initialize(){if(!enabled)return;for(Transformer t:transformers.findAll())if(t.isSimulationEnabled())seedDiagnosticHistory(t);}
  @Scheduled(fixedDelayString="${app.simulation.interval-ms:5000}") @Transactional public void tick(){
   if(!enabled)return;
@@ -85,8 +85,6 @@ public class SimulationService {
    if(pumpInstalled)save(t,MeasurementType.COOLING_PUMP_STATUS,pumpOn?1:0,"ON=1 / OFF=0",now);
    save(t,MeasurementType.OIL_LEVEL_PERCENT,oilLevel,"%",now);save(t,MeasurementType.RADIATOR_OUTLET_TEMPERATURE,radiatorOutlet,"°C",now);
    save(t,MeasurementType.OLTC_TAP_POSITION,tapPosition,"position",now);save(t,MeasurementType.OLTC_OPERATION_COUNT,operationCount,"operations",now);save(t,MeasurementType.OLTC_MOTOR_CURRENT_A,motorCurrent,"A",now);
-   // Health is assessed less frequently than telemetry to avoid a DB write every tick.
-   if(n%12==0)health.assess(t);
    t.updateSimulationState(n+1,BigDecimal.valueOf(topOilState),BigDecimal.valueOf(hotspotState),tapPosition,operationCount);
    realtime.publish(t.getId(),transformerService.dashboard(t.getId()));
   }

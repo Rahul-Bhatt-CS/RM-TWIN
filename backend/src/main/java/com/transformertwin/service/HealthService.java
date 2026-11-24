@@ -6,7 +6,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import java.math.*;import java.time.*;import java.util.*;import java.util.stream.Collectors;
+import java.math.*;import java.time.*;
+import java.time.temporal.ChronoUnit;
+import java.util.*;import java.util.stream.Collectors;
 
 /** Transparent demonstration index. Every anchor/weight is a configurable project assumption, not an IEC/CEA limit. */
 @Service
@@ -64,7 +66,10 @@ public class HealthService {
   BigDecimal index=coverage.compareTo(minCoverage)>=0?weighted.divide(coverage,2,RoundingMode.HALF_UP):null;
   String status=index==null?"UNAVAILABLE":index.compareTo(bd("40"))<0?"CRITICAL":index.compareTo(bd("65"))<0?"WARNING":"NORMAL";if(critical)status="CRITICAL";else if(warn&&"NORMAL".equals(status))status="WARNING";
   String explain="HI = sum(category score × category weight) / sum(weights of assessed categories). Coverage="+coverage.multiply(H).setScale(0,RoundingMode.HALF_UP)+"% of configured weights. The original 25:30:25:15 relative proportions were normalized across the four scored groups after protection scoring was removed. Protection and auxiliary systems are excluded from the index because no validated condition evidence is implemented. DGA concentrations are not averaged as independent health scores. Status may be overridden by critical events. Project model, not IEC/CEA-prescribed formula.";
-  HealthAssessment a=new HealthAssessment(t,status,index,coverage,explain,now);parts.forEach(a::addComponent);HealthAssessment saved=assessments.save(a);assessments.deleteByTransformerIdAndIdNot(t.getId(),saved.getId());return saved;
+  Instant hour=now.truncatedTo(ChronoUnit.HOURS);
+  HealthAssessment a=assessments.findByTransformerIdAndAssessmentHour(t.getId(),hour).orElse(null);
+  if(a==null)a=new HealthAssessment(t,status,index,coverage,explain,now);else a.replaceWith(status,index,coverage,explain,now);
+  parts.forEach(a::addComponent);return assessments.save(a);
  }
  private boolean diagnosticFresh(DiagnosticTest d,Instant now){long days=d.getTestType().equalsIgnoreCase("DGA")?dgaFreshDays:d.getTestType().equalsIgnoreCase("OIL_TEST")?oilFreshDays:730;return !d.getTestDate().isBefore(now.minus(days,java.time.temporal.ChronoUnit.DAYS));}
  private boolean fresh(SensorReading r,Instant n){return !r.getRecordedAt().isBefore(n.minusSeconds(staleSeconds));}

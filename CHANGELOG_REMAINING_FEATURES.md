@@ -48,3 +48,10 @@ Administrator token remains removed as requested. Write APIs remain unauthentica
 - Added sensor history time windows, hourly aggregation/retention, and maintenance history.
 - Added thermal model unit tests and implementation/research documentation.
 - Authentication, authorization and security configuration unchanged.
+
+## Persistence and hourly health updates (2026-11-24)
+- Removed the sensor-reading hourly aggregate table and its API/UI path. Sensor history now queries persisted raw readings for every selected time range.
+- Removed the scheduled raw-to-hourly sensor rollup and automatic 90-day deletion. Simulated raw readings remain in `sensor_reading` until an explicit retention policy is introduced.
+- Added one `health_assessment` snapshot per transformer per UTC hour, protected by a unique database key. Health evaluation updates the current hour's snapshot; the hourly scheduler ensures a snapshot is captured at the start of each hour even when simulation cadence changes.
+- Added persistent `alert_notification` records created transactionally when a new alert episode is raised. Added notification and mark-read APIs plus an in-app notification feed and opt-in browser notifications.
+- Simulated sensor values and diagnostic seed records continue to be persisted in `sensor_reading` and `diagnostic_test`; simulation thermal/OLTC state remains persisted on `transformer`. No heap collection is used as the source of simulated measurement/state truth. The in-memory SSE registry only tracks connected clients, not simulated data.

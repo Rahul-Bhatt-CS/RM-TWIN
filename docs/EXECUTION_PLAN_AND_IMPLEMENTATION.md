@@ -33,7 +33,7 @@ The application does not claim IEC/IEEE/CEA certification. The Health Index weig
 - Added freshness checks for key live telemetry and stale-sensor alerts. Stale readings are excluded from thermal scoring.
 - Offline diagnostic evidence is freshness-gated (DGA 30 days, oil tests 180 days, other periodic tests 730 days by configurable defaults).
 - Phase-specific bushing results are collapsed to a parameter/component group before category averaging so three phases do not multiply the category weight.
-- Health assessment writes are throttled to every 12 simulation ticks (one minute at the default 5-second interval), not every telemetry tick.
+- Health evaluation is scheduled once per minute independently of simulation cadence. It updates a single database snapshot for the current UTC hour.
 
 ### 3. DGA evidence view
 - Added `/api/transformers/{id}/dga-analysis`. The follow-up groups gases by sample ID, component and sample point, calculates within-sample ratios and returns sample-level trend points. Rates are calculated only for comparable sample point/component pairs with a positive time interval. DGA is not converted into fault labels.
@@ -45,7 +45,7 @@ The application does not claim IEC/IEEE/CEA certification. The Health Index weig
 
 ### 5. Historical data and operations
 - Added 24-hour, 7-day, 30-day and all-available sensor history filters.
-- Added hourly sensor aggregation table and an idempotent daily roll-up. Raw sensor records are retained for 90 days; hourly summaries are retained. The roll-up runs at 02:15 server time by default and can be configured.
+- Initial implementation added hourly sensor aggregation and 90-day raw retention; the follow-up persistence change removes both. Current sensor history reads raw rows directly and does not automatically purge them.
 - Added maintenance history records with component, activity, date, performer, findings and optional next-due date (Flyway V8).
 
 ### 6. Tests
@@ -71,7 +71,7 @@ These are not values guaranteed for the 100 MVA reference transformer. Replace t
 
 ## Migration and upgrade notes
 
-New Flyway migrations V6–V16 are included. V6 adds diagnostic context; V7 creates hourly aggregates; V8 creates maintenance history; V9 removes protection events; V10 persists simulation state and asset thermal configuration; V11 adds DGA sample identity; V12 adds alert lifecycle and maintenance links; V13 adds aggregate units; V14 adds sensor-channel identity; V15 keys hourly aggregates by sensor channel; V16 retains only the latest health assessment. Do not edit or delete V1–V8. Keep the existing database and allow Flyway to apply V9–V16 in order. The roll-up is idempotent and backfills all raw periods still available before the 90-day raw-data purge.
+Flyway V6–V18 are applied in order. V7–V15 represent the historical sensor-hourly aggregation implementation; V17 drops that table. V16 was an intermediate latest-only health-history change; V17 adds a unique UTC-hour key and retains hourly snapshots going forward. V18 adds durable alert notifications. Do not edit previously applied migrations; preserve the database and allow Flyway to apply new migrations in order.
 
 ## Explicitly not implemented / remaining validation
 
@@ -92,17 +92,25 @@ Source archive and migration sequence were inspected. The frontend TS/TSX files 
 
 - Removed the Protection Events API and persistence entity/repository. Flyway V9 drops the legacy `protection_event` table.
 - Removed protection/auxiliary from Health Index categories. The four remaining relative weights are normalized from 25:30:25:15.
-- Removed the health-history endpoint and frontend tab. Only the latest assessment is retained per transformer; prior snapshots are deleted when a new assessment is saved.
+- This intermediate iteration removed health history and retained only the latest assessment. Follow-up V17 supersedes that behaviour with hourly snapshots and a health-history endpoint.
 - Persisted simulation tick, thermal state, OLTC tap position and operation count on the transformer row. State resumes after application restart.
-- Added OEM thermal parameters, cooling-stage text and sensor-mapping JSON to transformer registration; mapped channel keys are now attached to simulated raw readings and carried into hourly aggregates.
-- Added raw short-window and hourly aggregate long-window history API. Roll-up is idempotent and reprocesses all raw periods still retained before the 90-day purge.
+- Added OEM thermal parameters, cooling-stage text and sensor-mapping JSON to transformer registration; mapped channel keys are attached to simulated raw readings.
+- Sensor history uses raw readings for every time range; no sensor-hourly aggregation table, API or scheduled purge remains.
 - Added DGA sample identity. DGA ratios are calculated inside a sample; gas trend points and rates are returned only where sampling point/component and interval are comparable. Manual DGA entry requires a sample ID.
 - Added alert recurrence count, last occurrence, resolution evidence and operator notes. Recurrence count increases across distinct alert episodes, not repeated polling ticks.
 - Added maintenance links to alert and diagnostic record IDs, with same-transformer validation. Component linkage remains via component key.
 - Replaced the diagnostics browser with dedicated DGA, oil-quality, insulation, bushing, OLTC and FRA/mechanical views.
 
 ### Migrations
-V9 removes protection events; V10 adds persistent simulation and asset engineering configuration; V11 adds diagnostic sample identity; V12 adds alert lifecycle and maintenance references; V13 adds units to hourly aggregates; V14 adds sensor-channel identity to raw and hourly readings; V15 preserves sensor-channel identity in hourly aggregation keys; V16 removes old health snapshots. Preserve the database and allow Flyway to apply these migrations in order.
+V9 removes protection events; V10 adds persistent simulation and asset engineering configuration; V11 adds diagnostic sample identity; V12 adds alert lifecycle and maintenance references; V13 adds units to the historical hourly table; V14 adds sensor-channel identity to raw and hourly readings; V15 keys the historical hourly table by sensor channel; V16 temporarily retained only the latest health snapshot. V17 removes the historical sensor-hourly table and establishes hourly health snapshots; V18 adds alert notifications. Preserve the database and allow Flyway to apply these migrations in order.
 
 ### Verification caveat
 The source changes and ZIP packaging were checked. A complete Maven build/database integration test and frontend production build were not completed in this environment because Maven is unavailable and npm dependency installation did not complete. The new migrations and API contracts therefore still require execution against the user's MySQL database before operational use.
+
+
+## Follow-up — durable hourly health and alert notifications (24 Nov 2026)
+
+- `health_assessment` now has one unique row per transformer and UTC hour. The row is refreshed as evaluations occur during that hour, and prior hourly snapshots are retained. A UTC hourly scheduler also captures assessments when the simulator is disabled.
+- Added `/api/transformers/{id}/health-history` to retrieve hourly snapshots. The overview displays the trend and stored coverage/explanation.
+- Alerts remain durable in `alert`; each newly created alert episode creates one durable `alert_notification` record. Added notification listing and mark-read endpoints. The frontend displays in-app notifications, polls for new events and offers opt-in browser notifications.
+- Simulation measurements and diagnostic seed values are persisted to `sensor_reading` and `diagnostic_test`. Simulation progression state remains on the `transformer` row. The SSE client registry is in-memory connection state only, not simulated measurement/state storage.
