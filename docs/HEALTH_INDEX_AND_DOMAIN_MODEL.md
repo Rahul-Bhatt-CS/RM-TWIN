@@ -1,80 +1,83 @@
-# Health Index and Domain Model — v2
+# GridPulse Health Index and scoring model
 
-## 1. Why this model exists
+## Purpose and limitation
 
-The assignment requires a simulated live asset-health view, degradation alerts and history. It does not prescribe a health-index formula. The implementation therefore separates:
+The Health Index is an explainable **project demonstration model** for a simulated 100 MVA, 220/33 kV transformer. It is not a formula prescribed by IEC, IEEE, CEA or CIGRE, is not a condition certification, and must not be used for operational decisions. All scoring anchors and category weights below are explicit project assumptions that require asset-specific engineering review before any real deployment.
 
-- measured values and their provenance;
-- diagnostic test results;
-- condition-group interpretation;
-- alerts;
-- a demonstration-only composite score.
+## Category weights
 
-The application must never present this index as a certified transformer health index or a safe-to-operate determination.
+| Category | Weight |
+|---|---:|
+| Thermal and loading | 25% |
+| Oil and DGA | 30% |
+| Insulation | 25% |
+| Mechanical and electrical | 15% |
+| Protection and auxiliary | 5% |
+| **Total** | **100%** |
 
-## 2. Condition groups and extension keys
+For each category, available parameter scores are averaged. For this version each available parameter record has equal influence within its category. Phase-specific bushing readings therefore contribute as individual records. Parameters without a scoring rule are displayed as evidence but are not scored.
 
-Stable backend keys are intended to survive UI changes and support a future 3D part-to-condition mapping.
+## Parameter normalization
 
-| Key | Group | Proposed weight | Current evidence |
-|---|---|---:|---|
-| `THERMAL` | Thermal and loading | 25% | Simulated top-oil temperature, winding hot spot and load |
-| `OIL_DGA` | Oil and dissolved-gas condition | 30% | Imported moisture and DGA are stored and displayed; no automatic score/diagnosis is assigned |
-| `INSULATION` | Insulation condition | 25% | Unknown until a validated assessment method and baseline are configured |
-| `MECHANICAL` | Mechanical and electrical condition | 15% | Unknown until validated FRA, winding-resistance, bushing or PD interpretation is configured |
-| `PROTECTION` | Protection and auxiliary systems | 5% | Reported events are displayed; no score is inferred from absence of events |
+Each supported parameter is normalized to 0–100 using a piecewise linear function between three project anchors:
 
-Weights are a prototype design assumption and total 100%. The current score is computed only from groups with supported inputs and is renormalized by available weight. The thermal group uses explicit demo triggers; the oil/DGA group is no longer assigned an automatic score from a single moisture value. `coverage` is the sum of available group weights. Missing groups are not assigned 100.
+- Better-is-higher parameters: score 100 at or above the `good` anchor, 60 at the `warning` anchor, and 0 at or below the `poor` anchor.
+- Lower-is-better parameters: score 100 at or below the `good` anchor, 60 at the `warning` anchor, and 0 at or above the `poor` anchor.
+- Between anchors, linear interpolation is used. Values are clamped to [0,100].
 
-## 3. Demonstration rules
+The actual anchors are defined in `HealthService.java` and are demonstration screening values, not universal operating limits. DGA interpretation in particular requires trend, rate-of-rise, gas ratios, sampling context, and asset baseline; this model is not an IEC 60599 / IEEE C57.104 diagnostic implementation.
 
-- Winding hot-spot warning and critical triggers are configurable environment values, defaulting to 95°C and 110°C.
-- Load warning trigger defaults to 100%.
-- Top-oil temperature is shown as evidence but is not scored with an invented universal threshold.
-- Moisture is stored and displayed but is not automatically scored.
-- DGA gas concentrations, gas ratios and rates of change are not automatically scored.
-- BDV, tan delta, PD, FRA, furan, IR/PI and winding resistance are not automatically scored.
+## Category and overall formulas
 
-These rules are not universal operating limits. A transformer-specific production model must account for voltage class, rating, cooling, insulation, manufacturer data, ambient temperature, loading duration, test method, baseline and applicable standards.
+For category `c`, with `n` supported and available parameter scores:
 
-## 4. Alert model
+`categoryScore(c) = sum(parameterScore_i) / n`
 
-Alerts are generated from explicit demo triggers or reported active protection events. Duplicate active alerts for the same transformer and condition key are suppressed. A condition clearing resolves the corresponding active demo alert. Alerts are evidence notifications, not commands.
+For categories with an assessed score, overall index is normalized to the weight coverage actually assessed:
 
-## 5. Data provenance
+`HI = sum(categoryScore_c * categoryWeight_c) / sum(categoryWeight_c for assessed categories)`
 
-- `SIMULATED`: generated by the local simulator.
-- `IMPORTED`: entered from a lab report, public dataset or case study.
-- `LIVE`: reserved for a future authenticated gateway/device integration; not implemented.
+Coverage is `sum(assessed category weights)`, expressed as a fraction of 1. Missing or unscored data is excluded and reduces coverage; it is never assigned 100. The HI is unavailable below configured minimum coverage (`app.health.minimum-coverage`, default 0.60).
 
-Store the source document, sample date, sample point, units, lab and method in notes/reference metadata when importing research data. Never merge records from different transformers into a single synthetic timeline.
+## Alarm separation
 
-## 6. Real data example
+Alarms are generated independently from the numeric index using configured demo triggers and diagnostic screening anchors. An active critical protection event or configured critical hot-spot trigger overrides the displayed status to CRITICAL, but does not artificially change the numeric HI. Acknowledgement records operator review; it does not resolve the condition. Alerts resolve only when the associated condition is no longer present in the latest assessment.
 
-`../samples/cea_veeranam_dga_example.csv` contains a small transcription of two reported bottom-oil DGA sample dates for one transformer case in a CEA failure report. It is included as a research/demo example only. Verify the original report page/table and units before citing it in the final submission. The CSV is not loaded automatically into the simulator.
+## Sources and data provenance
 
-## 7. Current 3D mapping
+Continuous telemetry and seeded diagnostic history are marked `SIMULATED`. User-entered offline diagnostic results are marked `IMPORTED`. The interface labels the simulator and includes source fields in history tables. Synthetic records are not physical measurements, laboratory certificates, or proof of relay operation.
 
-A future `TransformerPart` entity should include:
-- `id`, `transformer_id`, `part_key`, `display_name`;
-- `model_asset_id`, `gltf_node_name` or stable mesh identifier;
-- `component_key` from the group keys above;
-- optional measurement-type/diagnostic-parameter mapping;
-- optional transform/visibility metadata.
+## Current normalization anchors
 
-A `GET /api/transformers/{id}/parts` API can later expose the mapping. The frontend can load a glTF model, let the user select a mesh, resolve its `component_key`, and display the related component score, readings, diagnostic tests and alerts. Do not store raw mesh geometry in the relational database; store the model file in object storage and keep metadata/URLs in the database.
+The columns below are `(good, warning, poor)`. Lower-is-better parameters receive 100 at/below good, 60 at warning, and 0 at/above poor. Higher-is-better parameters use the inverse direction.
 
-## 8. Future validation gate
+| Category | Parameter | Direction | Good | Warning | Poor | Unit |
+|---|---|---|---:|---:|---:|---|
+| Thermal | Winding hot-spot | Lower | 80 | 95 | 110 | °C |
+| Thermal | Top-oil | Lower | 65 | 80 | 95 | °C |
+| Thermal | Load | Lower | 80 | 100 | 120 | % |
+| Thermal | Ambient | Lower | 35 | 45 | 55 | °C |
+| Thermal | Fan/pump status | Binary | ON=100 | OFF=55 | — | — |
+| Thermal | Oil level | Higher | 90 | 80 | 65 | % |
+| Oil/DGA | Hydrogen | Lower | 50 | 150 | 300 | ppm |
+| Oil/DGA | Methane | Lower | 30 | 130 | 250 | ppm |
+| Oil/DGA | Ethane | Lower | 20 | 90 | 180 | ppm |
+| Oil/DGA | Ethylene | Lower | 20 | 100 | 280 | ppm |
+| Oil/DGA | Acetylene | Lower | 0.5 | 2 | 10 | ppm |
+| Oil/DGA | Carbon monoxide | Lower | 350 | 600 | 1000 | ppm |
+| Oil/DGA | Carbon dioxide | Lower | 2500 | 5000 | 10000 | ppm |
+| Oil/DGA | Moisture | Lower | 10 | 20 | 35 | ppm |
+| Oil/DGA | Breakdown voltage | Higher | 60 | 50 | 40 | kV |
+| Oil/DGA | Acidity | Lower | 0.10 | 0.20 | 0.40 | mgKOH/g |
+| Insulation | Insulation resistance | Higher | 5000 | 2000 | 500 | MΩ |
+| Insulation | Polarization index | Higher | 2.0 | 1.5 | 1.0 | ratio |
+| Insulation | Winding/bushing tan delta | Lower | 0.003 | 0.007 | 0.015 | ratio |
+| Insulation | Furan 2-FAL | Lower | 0.1 | 1.0 | 5.0 | ppm |
+| Mechanical | FRA deviation | Lower | 1 | 3 | 8 | % |
+| Mechanical | PD apparent charge | Lower | 50 | 100 | 300 | pC |
+| Mechanical | OLTC contact resistance | Lower | 80 | 100 | 150 | µΩ |
+| Mechanical | OLTC operating time | Lower | 60 | 80 | 120 | ms |
+| Mechanical | Radiator temperature difference | Lower | 10 | 20 | 30 | °C |
+| Mechanical | Fan vibration | Lower | 2 | 4 | 8 | mm/s |
 
-Before operational use, have a transformer domain engineer approve:
-1. Applicable standards and editions.
-2. Manufacturer-specific alarm and trip settings.
-3. DGA interpretation method and baseline.
-4. Temperature/loading model and ambient/cooling inputs.
-5. Test recency and data-quality rules.
-6. Health group weights, missing-data handling and critical overrides.
-7. Validation against known transformer failure/maintenance histories.
-
-
-## Auxiliary demonstration alerts
-The simulator includes a scripted fan-OFF period during an elevated-hot-spot scenario. The backend raises a warning when fan state is OFF while the hot-spot exceeds the configured demo warning trigger. A pump-OFF state also raises a warning. These are scenario logic checks only: fan/pump applicability and alarm settings depend on the actual cooling design and OEM control philosophy. Oil-level values are displayed but not thresholded because no transformer-specific alarm setting is configured. OLTC tap/operation/motor signals are demonstration telemetry and are not interpreted as OLTC faults.
+These anchors are only demo values. Some parameters intentionally have no score (for example bushing capacitance and winding resistance) because an absolute value without the transformer-specific baseline, phase comparison, test method and temperature correction is not enough to create a defensible score. They remain visible in the diagnostic history.

@@ -28,3 +28,13 @@ Administrator token remains removed as requested. Write APIs remain unauthentica
 - Increased `diagnostic_test.unit` and `sensor_reading.unit` from VARCHAR(20) to VARCHAR(40).
 - Updated both JPA entity mappings to length 40.
 - This resolves MySQL error 1406 (`Data too long for column 'unit'`) when synthetic diagnostic labels such as `°C · synthetic indication` are inserted.
+
+## Health/alarm workflow alignment (2026-11-24)
+- Replaced fixed demonstration category scores with parameter-level 0–100 piecewise-linear scoring and weighted category aggregation.
+- Applied category weights: thermal/loading 25%, oil/DGA 30%, insulation 25%, mechanical/electrical 15%, protection/auxiliary 5%.
+- Health Index is normalized over assessed category weights; missing/unscored categories reduce coverage and are never assumed healthy. Minimum coverage defaults to 60%.
+- Added automatic diagnostic-condition alerts and retained automatic telemetry alerts. Critical conditions override status separately from the numeric Health Index.
+- Removed the manual protection-event entry form and write endpoint; protection-event history is read-only in the UI.
+- Kept manual entry for offline diagnostic/laboratory results only.
+- Added alert acknowledgement (migration V5). Acknowledgement records review and does not resolve an alert.
+- Documented all scoring assumptions and limitations in `docs/HEALTH_INDEX_AND_DOMAIN_MODEL.md`.

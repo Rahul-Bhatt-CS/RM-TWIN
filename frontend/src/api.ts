@@ -11,10 +11,10 @@ export const api={
  dashboard:(id:number)=>request<Dashboard>(`/transformers/${id}/dashboard`),
  readings:(id:number,metric:string,page=0,size=25)=>request<Page<Reading>>(`/transformers/${id}/readings?metric=${encodeURIComponent(metric)}&page=${page}&size=${size}`),
  alerts:(id:number,page=0,size=25)=>request<Page<Alert>>(`/transformers/${id}/alerts?page=${page}&size=${size}`),
+ acknowledgeAlert:(id:number)=>request<Alert>(`/alerts/${id}/acknowledge`,{method:'POST'}),
  healthHistory:(id:number,page=0,size=25)=>request<Page<Health>>(`/transformers/${id}/health-history?page=${page}&size=${size}`),
  diagnostics:(id:number,page=0,size=25)=>request<Page<Diagnostic>>(`/transformers/${id}/diagnostics?page=${page}&size=${size}`),
  addDiagnostic:(id:number,body:unknown)=>request<Diagnostic>(`/transformers/${id}/diagnostics`,{method:'POST',body:JSON.stringify(body)}),
  protection:(id:number,page=0,size=25)=>request<Page<Protection>>(`/transformers/${id}/protection-events?page=${page}&size=${size}`),
- addProtection:(id:number,body:unknown)=>request<Protection>(`/transformers/${id}/protection-events`,{method:'POST',body:JSON.stringify(body)}),
  eventUrl:(id:number)=>`${base}/transformers/${id}/events`
 };

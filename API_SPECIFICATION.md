@@ -10,8 +10,9 @@ Base path: `/api`. JSON REST endpoints plus SSE. All page responses include `con
 | GET | `/transformers/{id}/dashboard` | Public read | Latest readings, health and active-alert count |
 | GET | `/transformers/{id}/readings?metric=...&page=0&size=25` | Public read | Paginated readings |
 | GET/POST | `/transformers/{id}/diagnostics` | Unauthenticated demo write | List/add diagnostic results |
-| GET/POST | `/transformers/{id}/protection-events` | Unauthenticated demo write | List/add protection events |
+| GET | `/transformers/{id}/protection-events` | Public read | List simulated/recorded protection events |
 | GET | `/transformers/{id}/alerts?page=0&size=25` | Public read | Paginated alerts |
+| POST | `/alerts/{alertId}/acknowledge?by=Operator` | Unauthenticated demo write | Acknowledge an active alert without resolving it |
 | GET | `/transformers/{id}/health-history?page=0&size=25` | Public read | Paginated assessment history |
 | GET | `/transformers/{id}/events` | Public read | SSE dashboard events |
 
@@ -22,7 +23,7 @@ There is no token or authentication check in this prototype. POST endpoints are 
 - Asset code: 2–60 characters, `[A-Za-z0-9._-]`, unique.
 - Names and text fields have explicit maximum lengths.
 - Numeric nameplate values are bounded.
-- Diagnostic value/date/unit are required. Optional `componentKey` associates a test with a stable 3D inspection area; optional `phase` supports HV A/B/C and LV a/b/c bushing records.
+- Diagnostic value/date/unit are required. Optional `componentKey` associates a test with a stable 3D inspection area; optional `phase` supports HV A/B/C and LV a/b/c bushing records. There is no endpoint to manually create an alarm or protection event.
 - Page index must be non-negative; size 1–100.
 - Unknown transformer returns 404; validation errors return 400; duplicate/conflict returns 409.
 - Unexpected errors return generic 500 response without stack traces or SQL details.
@@ -37,3 +38,8 @@ Transformer create/read contracts include `lvVoltageKv`, `ratedFrequencyHz` and 
 
 ### Component-linked diagnostic example
 `POST /api/transformers/{id}/diagnostics` accepts optional `componentKey` and `phase`, for example `{"testType":"BUSHING_TEST","parameterName":"TAN_DELTA","value":0.0042,"unit":"pu","testDate":"2026-11-23T10:00:00Z","componentKey":"HV_BUSHING","phase":"A"}`. The record is an imported test result; it is not automatically judged against a universal limit.
+
+## Alert acknowledgement
+- `POST /api/alerts/{alertId}/acknowledge?by=Operator` records acknowledgement for an active alert.
+- Acknowledgement does not resolve or suppress the alert condition. The alert is resolved only when the backend assessment no longer detects the condition.
+- Protection-event history is read-only in this demo; there is no manual protection-event or alarm creation endpoint.

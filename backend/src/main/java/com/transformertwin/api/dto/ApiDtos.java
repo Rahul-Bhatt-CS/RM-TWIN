@@ -31,8 +31,8 @@ public final class ApiDtos {
  public record HealthView(Long id,Long transformerId,String status,BigDecimal healthIndex,BigDecimal coverage,String explanation,Instant assessedAt,List<ComponentView> components) {
   public static HealthView from(HealthAssessment h){return new HealthView(h.getId(),h.getTransformer().getId(),h.getHealthStatus(),h.getHealthIndex(),h.getCoverage(),h.getExplanation(),h.getAssessedAt(),h.getComponents().stream().map(ComponentView::from).toList());} public static HealthView summary(HealthAssessment h){return new HealthView(h.getId(),h.getTransformer().getId(),h.getHealthStatus(),h.getHealthIndex(),h.getCoverage(),h.getExplanation(),h.getAssessedAt(),List.of());}
  }
- public record AlertView(Long id,Long transformerId,String conditionKey,String title,String message,String severity,String status,BigDecimal observedValue,String unit,Instant createdAt,Instant resolvedAt) {
-  public static AlertView from(Alert a){return new AlertView(a.getId(),a.getTransformer().getId(),a.getConditionKey(),a.getTitle(),a.getMessage(),a.getSeverity(),a.getStatus(),a.getObservedValue(),a.getUnit(),a.getCreatedAt(),a.getResolvedAt());}
+ public record AlertView(Long id,Long transformerId,String conditionKey,String title,String message,String severity,String status,BigDecimal observedValue,String unit,Instant createdAt,Instant resolvedAt,Instant acknowledgedAt,String acknowledgedBy) {
+  public static AlertView from(Alert a){return new AlertView(a.getId(),a.getTransformer().getId(),a.getConditionKey(),a.getTitle(),a.getMessage(),a.getSeverity(),a.getStatus(),a.getObservedValue(),a.getUnit(),a.getCreatedAt(),a.getResolvedAt(),a.getAcknowledgedAt(),a.getAcknowledgedBy());}
  }
  public record DiagnosticCreate(@NotBlank @Size(max=60) String testType,@NotBlank @Size(max=80) String parameterName,
   @NotNull @DecimalMin("-1000000") @DecimalMax("1000000") BigDecimal value,@NotBlank @Size(max=20) String unit,

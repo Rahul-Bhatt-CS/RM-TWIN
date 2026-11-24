@@ -56,3 +56,12 @@ Before submission, run `npm ci && npm run build`, `mvn test`, and an end-to-end 
 - OLTC: contact-resistance and operating-time sample records plus live tap/motor telemetry.
 - CONTROL_CABINET: synthetic protection/auxiliary indication events.
 All sample test records are tagged SIMULATED and include non-operational-use disclaimers.
+
+
+## 2026-11-24 workflow alignment
+- Health Index now uses parameter-level linear normalization, category averaging and weight-normalized aggregation with 60% minimum data coverage.
+- Automatic alarms are raised/resolved from the latest telemetry and diagnostic conditions.
+- Manual alarm/protection-event creation was removed from the UI and protection-event POST endpoint.
+- Offline diagnostic test entry remains available.
+- Alert acknowledgement is available; acknowledgement does not resolve the condition. Flyway V5 adds acknowledgement metadata.
+- Build verification is pending in an environment with Maven and frontend dependencies installed.

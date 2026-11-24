@@ -101,7 +101,7 @@ Open the Vite URL, normally `http://localhost:5173`. Set `VITE_API_BASE_URL` if 
 2. Enter a name, unique asset code, rating and optional metadata.
 3. Create the asset. If the simulator is enabled, wait for readings.
 4. Select the transformer card or dropdown to open its dashboard.
-5. Add diagnostic records under **Diagnostics**. Use `IMPORTED` provenance for lab or research data and record the actual test date/source.
+5. Add offline diagnostic records under **Diagnostics**. Use `IMPORTED` provenance for actual lab or inspection data and record the actual test date/source. Live readings and alarms are generated automatically by the simulator. Protection events are read-only in this demo.
 6. Review alerts, history and health coverage.
 
 No transformer is silently seeded. This makes asset creation an explicit part of the demo.
@@ -117,25 +117,26 @@ All endpoints use `/api`.
 | GET | `/transformers/{id}/dashboard` | Current dashboard |
 | GET | `/transformers/{id}/readings?metric=...&page=0&size=25` | Paginated readings |
 | GET/POST | `/transformers/{id}/diagnostics` | List/add diagnostic results |
-| GET/POST | `/transformers/{id}/protection-events` | List/add protection events |
+| GET | `/transformers/{id}/protection-events` | Read simulated/recorded protection events |
 | GET | `/transformers/{id}/alerts?page=0&size=25` | Paginated alerts |
+| POST | `/alerts/{alertId}/acknowledge?by=Operator` | Record operator acknowledgement; does not resolve the alert |
 | GET | `/transformers/{id}/health-history?page=0&size=25` | Paginated health history |
 | GET | `/transformers/{id}/events` | Server-sent dashboard events |
 
-Maximum page size is 100. POST endpoints do not require a token in this demo build.
+Maximum page size is 100. POST endpoints do not require a token in this demo build. Alert acknowledgement records operator review; it does not clear the underlying condition.
 
 ## Health-index model and limitations
 
-The health index is a **transparent demonstration score**, not a CEA/BIS/IEC/IEEE/CIGRE formula.
+The health index is a **transparent demonstration score**, not a CEA/BIS/IEC/IEEE/CIGRE formula. Parameter scores use piecewise-linear 0–100 normalization; category scores average available parameter scores; the overall index is the weighted average normalized by assessed category coverage. Weights are Thermal 25%, Oil/DGA 30%, Insulation 25%, Mechanical/Electrical 15%, Protection/Auxiliary 5%. See `docs/HEALTH_INDEX_AND_DOMAIN_MODEL.md` for the exact method and limitations.
 
-Current groups:
-- Thermal and loading (25%): uses available top-oil, hot-spot and load values.
-- Oil and DGA (30%): currently uses a moisture record for the demo score. DGA gas values are stored but not automatically diagnosed.
-- Insulation (25%): unknown until a validated method/baseline is configured.
-- Mechanical and electrical (15%): unknown until FRA, winding-resistance, bushing or PD methods are configured.
-- Protection and auxiliary (5%): event visibility only; no health score is inferred from missing events.
+Category weights and score availability:
+- Thermal and loading (25%): parameter-level scores from current top-oil, winding hot-spot, load, ambient, cooling status and oil-level telemetry.
+- Oil and DGA (30%): latest available DGA gas and oil-test records are normalized using project screening anchors.
+- Insulation (25%): latest available IR, PI, tan-delta, bushing and furan records are scored only where a project scoring rule is defined.
+- Mechanical and electrical (15%): latest available FRA, PD, OLTC and cooling diagnostic records are scored where a rule is defined.
+- Protection and auxiliary (5%): synthetic status indication contributes a demonstration score; an active event is separately surfaced as critical.
 
-The index averages only groups with supported inputs. `coverage` shows the fraction of configured group weights represented by available evidence. Missing groups are excluded, not assigned a healthy score. A critical hot-spot demo trigger overrides the average status. This is not an engineering assessment.
+Within a category, the latest available record per parameter/component/phase is scored and the available scores are averaged. Overall HI is `sum(category score × category weight) / sum(assessed category weights)`. Coverage is the sum of assessed category weights. Minimum coverage defaults to 60%; missing data is never assigned a score of 100. Critical conditions override the status label, not the numeric HI. See `docs/HEALTH_INDEX_AND_DOMAIN_MODEL.md` for the interpolation anchors and explicit limitations. These are project demonstration assumptions, not universal operating thresholds.
 
 ## Security and known limitations
 
@@ -149,7 +150,7 @@ Implemented:
 - No actuator environment/config endpoints are exposed.
 
 Known limitations before public/production deployment:
-- **There is no authentication or authorization in this demo build.** Anyone who can reach the backend can create transformers, diagnostic records and protection events. Keep it on localhost or a trusted private network. Do not expose it publicly. Add proper identity, role-based authorization and audit logging before deployment.
+- **There is no authentication or authorization in this demo build.** Anyone who can reach the backend can create transformers and diagnostic records, and acknowledge alerts. Keep it on localhost or a trusted private network. Do not expose it publicly. Add proper identity, role-based authorization and audit logging before deployment.
 - Use HTTPS/TLS for all deployed traffic.
 - Add reverse-proxy rate limiting, request-size limits, security headers, dependency scanning, backup/restore and monitoring before public deployment.
 - SSE client counts and retention policies need operational limits.
@@ -230,6 +231,6 @@ This demonstration intentionally has no administrator token or authentication be
 
 ## Synthetic diagnostic demonstration data
 
-When simulation is enabled, the backend seeds one historical set of synthetic diagnostic records per transformer. It includes DGA gases and oil tests, insulation/ dielectric tests, phase-specific HV/LV bushing examples, FRA, winding resistance, partial-discharge, OLTC and radiator records, plus synthetic protection/auxiliary status events. The records use `source=SIMULATED` and include notes stating they are not actual measurements or standards-based pass/fail conclusions. The dashboard displays illustrative scenario scores for these groups so the demonstration no longer shows every category as UNKNOWN. These scores are intentionally not represented as IEC/CEA/OEM health ratings. Imported records without a validated interpretation method remain unscored.
+When simulation is enabled, the backend seeds one historical set of synthetic diagnostic records per transformer. It includes DGA gases and oil tests, insulation/ dielectric tests, phase-specific HV/LV bushing examples, FRA, winding resistance, partial-discharge, OLTC and radiator records, plus synthetic protection/auxiliary status events. The records use `source=SIMULATED` and include notes stating they are not actual measurements or standards-based pass/fail conclusions. The dashboard normalizes supported parameters to 0–100 using project-defined good/warning/poor anchors, averages them within category, and combines assessed categories using documented weights. Parameters without a defensible project scoring rule remain unscored and reduce coverage. These scores are not IEC/CEA/OEM health ratings.
 
 Synthetic diagnostic history is seeded once per transformer. Continuous simulated telemetry continues at `SIMULATION_INTERVAL_MS` (default 5000 ms). A newly created transformer receives its synthetic diagnostic history on its first simulator tick.
