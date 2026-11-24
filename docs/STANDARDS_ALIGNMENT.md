@@ -63,3 +63,11 @@ No administrator token is present, as requested. The API's write endpoints are t
 The implementation adds component/phase provenance for imported diagnostic results and demo telemetry for cooling auxiliaries and OLTC. These are data-model and visualization improvements, not a claim that the simulator reproduces IEC test procedures or OLTC controller logic. IEC 60076-7 requires transformer-specific thermal parameters and operating context; these are not present in the selected CEA rating row. Therefore the application deliberately does not label its scripted temperature sequence as an IEC 60076-7 thermal model. To enable that model, collect OEM/GTP values for rated top-oil rise, winding hot-spot gradient, oil and winding time constants, exponent and cooling arrangement, then validate the implementation with an electrical/transformer engineer.
 
 Component-linked diagnostic records are not the same as physical sensor placement. The `componentKey` and `phase` fields identify which component/phase a laboratory or field test concerns.
+
+## November 2026 implementation clarification
+
+- The simulator now uses a simplified first-order thermal response structure informed by IEC 60076-7:2018. It is not a full reproduction of the standard and is not calibrated to an OEM heat-run test.
+- DGA values are presented as evidence and selected ratios/rates are calculated only when the required samples exist. The application does not claim IEC 60599 or IEEE C57.104 diagnostic conformity.
+- Oil quality evidence is separated from DGA interpretation in line with the different scopes of IEC 60422:2024 and IEC 60599:2022.
+- Health Index weights and interpolation anchors are project demonstration assumptions. Protection is not assigned a health score based on synthetic event records.
+- No certification or operational suitability is claimed. Asset-specific OEM limits, test methods, baselines and engineering approval are prerequisites for operational use.

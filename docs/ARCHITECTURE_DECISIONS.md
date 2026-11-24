@@ -10,7 +10,7 @@
 | ADR-06 | Independent tick counter per transformer | One asset's simulator phase does not control another |
 | ADR-07 | REST for queries and SSE for dashboard updates | Simple request/response plus server push |
 | ADR-08 | Timestamped immutable reading rows | Enables trend and historical review |
-| ADR-09 | Separate `diagnostic_test` and `protection_event` records | Periodic test results and discrete events are not live sensor readings |
+| ADR-09 (superseded) | Separate `diagnostic_test` and `protection_event` records | Protection-event feature was removed in follow-up scope; the legacy table is dropped by Flyway V9 |
 | ADR-10 | Stable health component keys | Future 3D mesh selection can resolve to a health component without coupling to labels |
 | ADR-11 | Health score uses available evidence and reports coverage | Missing tests must not be treated as healthy |
 | ADR-12 | DGA values are stored but not auto-diagnosed | Avoid invented thresholds or unsupported fault claims |
@@ -34,7 +34,7 @@
 
 **Component identifiers:** `main-tank`, `conservator`, `radiator-left`, `radiator-right`, `hv-bushing-a/b/c`, `lv-bushing-a/b/c`, `tap-changer`, `control-cabinet`, and `cooling-fans`.
 
-**Data mapping:** Model parts map to the existing health component keys `THERMAL`, `OIL_DGA`, `INSULATION`, `MECHANICAL`, and `PROTECTION`. The inspector reads latest thermal values from the dashboard and fetches diagnostic / protection records for the selected group.
+**Data mapping:** Model parts map to the existing health component keys `THERMAL`, `OIL_DGA`, `INSULATION`, and `MECHANICAL`. The inspector reads latest thermal values from the dashboard and fetches diagnostic records for the selected group.
 
 **Trade-off:** The model is an illustrative 3D navigation model, not manufacturer CAD or a physics simulation. No Three.js dependency is required for this version. A future GLB/glTF viewer can replace the renderer while preserving component IDs and data-group mappings.
 

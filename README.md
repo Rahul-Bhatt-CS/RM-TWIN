@@ -12,9 +12,8 @@ A transformer-monitoring demonstration built with **Java 21 + Spring Boot + MySQ
 - Independent per-transformer simulation cycle; demo data is marked `SIMULATED`.
 - Rule-triggered demonstration alerts for configured hot-spot/load triggers.
 - Add imported diagnostic records (e.g. DGA gases, moisture, BDV, tan delta) with date, unit, source notes and lab.
-- Record protection/auxiliary events such as Buchholz or pressure-relief indications. The app does not control equipment.
 - Health index shows component groups, data coverage, missing data and explanations. DGA gases are stored but not automatically diagnosed.
-- Server-side pagination for readings, alerts, health assessments, diagnostics and protection events.
+- Server-side pagination for readings, alerts, diagnostics and maintenance records. The dashboard retains only the latest health assessment.
 - SSE dashboard updates.
 - Flyway database migration; Hibernate validates rather than silently changing production schema.
 
@@ -24,14 +23,14 @@ A transformer-monitoring demonstration built with **Java 21 + Spring Boot + MySQ
 React + TypeScript
   ├── Fleet / add transformer
   ├── Transformer dashboard
-  ├── Paginated readings, diagnostics, alerts, health, protection
+  ├── Raw/aggregated readings, diagnostic workspaces, alerts, maintenance
   └── SSE client
           │ REST + SSE
 Spring Boot modular monolith
   ├── Asset API
   ├── Simulation scheduler
   ├── Health assessment + alert rules
-  ├── Diagnostic / protection record APIs
+  ├── Diagnostic sample / maintenance record APIs
   └── Realtime event service
           │ JPA / Flyway
         MySQL
@@ -117,24 +116,21 @@ All endpoints use `/api`.
 | GET | `/transformers/{id}/dashboard` | Current dashboard |
 | GET | `/transformers/{id}/readings?metric=...&page=0&size=25` | Paginated readings |
 | GET/POST | `/transformers/{id}/diagnostics` | List/add diagnostic results |
-| GET | `/transformers/{id}/protection-events` | Read simulated/recorded protection events |
 | GET | `/transformers/{id}/alerts?page=0&size=25` | Paginated alerts |
 | POST | `/alerts/{alertId}/acknowledge?by=Operator` | Record operator acknowledgement; does not resolve the alert |
-| GET | `/transformers/{id}/health-history?page=0&size=25` | Paginated health history |
 | GET | `/transformers/{id}/events` | Server-sent dashboard events |
 
 Maximum page size is 100. POST endpoints do not require a token in this demo build. Alert acknowledgement records operator review; it does not clear the underlying condition.
 
 ## Health-index model and limitations
 
-The health index is a **transparent demonstration score**, not a CEA/BIS/IEC/IEEE/CIGRE formula. Parameter scores use piecewise-linear 0–100 normalization; category scores average available parameter scores; the overall index is the weighted average normalized by assessed category coverage. Weights are Thermal 25%, Oil/DGA 30%, Insulation 25%, Mechanical/Electrical 15%, Protection/Auxiliary 5%. See `docs/HEALTH_INDEX_AND_DOMAIN_MODEL.md` for the exact method and limitations.
+The health index is a **transparent demonstration score**, not a CEA/BIS/IEC/IEEE/CIGRE formula. Parameter scores use piecewise-linear 0–100 normalization; category scores average available parameter scores; the overall index is the weighted average normalized by assessed category coverage. After removing protection/auxiliary, the original 25:30:25:15 relative proportions are normalized across Thermal, Oil/DGA, Insulation and Mechanical/Electrical. See `docs/HEALTH_INDEX_AND_DOMAIN_MODEL.md` for the exact method and limitations.
 
 Category weights and score availability:
-- Thermal and loading (25%): parameter-level scores from current top-oil, winding hot-spot, load, ambient, cooling status and oil-level telemetry.
-- Oil and DGA (30%): latest available DGA gas and oil-test records are normalized using project screening anchors.
-- Insulation (25%): latest available IR, PI, tan-delta, bushing and furan records are scored only where a project scoring rule is defined.
-- Mechanical and electrical (15%): latest available FRA, PD, OLTC and cooling diagnostic records are scored where a rule is defined.
-- Protection and auxiliary (5%): synthetic status indication contributes a demonstration score; an active event is separately surfaced as critical.
+- Thermal and loading (26.32%): requires fresh top-oil and winding hot-spot readings; load is an operating-stress/alert input, not a direct health score.
+- Oil quality and DGA (31.58%): fresh moisture, BDV and acidity evidence may be scored; DGA is grouped by sample and displayed for engineering review, not averaged as independent gas scores.
+- Insulation (26.32%): selected IR, PI and winding/bushing tan-delta evidence is scored only where a project scoring rule is defined.
+- Mechanical and electrical (15.78%): selected FRA deviation and fan-vibration demonstration anchors are scored; other diagnostic results remain evidence-only without test context and baselines.
 
 Within a category, the latest available record per parameter/component/phase is scored and the available scores are averaged. Overall HI is `sum(category score × category weight) / sum(assessed category weights)`. Coverage is the sum of assessed category weights. Minimum coverage defaults to 60%; missing data is never assigned a score of 100. Critical conditions override the status label, not the numeric HI. See `docs/HEALTH_INDEX_AND_DOMAIN_MODEL.md` for the interpolation anchors and explicit limitations. These are project demonstration assumptions, not universal operating thresholds.
 
@@ -155,14 +151,14 @@ Known limitations before public/production deployment:
 - Add reverse-proxy rate limiting, request-size limits, security headers, dependency scanning, backup/restore and monitoring before public deployment.
 - SSE client counts and retention policies need operational limits.
 - No CSV upload endpoint; diagnostic records are entered through the form. Validate source licences and retain dataset provenance before importing bulk records.
-- The simulator is synthetic, deterministic demonstration data; it is not a transformer thermal/physics model and resets its cycle after backend restart.
+- The simulator is synthetic demonstration data and uses a simplified first-order thermal response. Its simulation tick, thermal state, tap position and operation count are persisted on the transformer record and resume after backend restart. This is not a complete IEC 60076-7 model.
 - No real sensor gateway, SCADA, IEC 61850, MQTT or field device is connected.
 - No real-time protection control, trip command, remaining-life prediction or ML fault diagnosis.
 - The demo health rules/weights require engineering review and transformer-specific manufacturer data before any real-world use.
 
 ## Future 3D extension
 
-The backend uses stable health-component keys (`THERMAL`, `OIL_DGA`, `INSULATION`, `MECHANICAL`, `PROTECTION`) rather than UI labels as identifiers. A later `TransformerPart` model can map a 3D asset's glTF node/mesh IDs to component keys, measurement channels and diagnostic records. The future flow can be:
+The backend uses stable health-component keys (`THERMAL`, `OIL_DGA`, `INSULATION`, `MECHANICAL`) rather than UI labels as identifiers. A later `TransformerPart` model can map a 3D asset's glTF node/mesh IDs to component keys, measurement channels and diagnostic records. The future flow can be:
 
 `select 3D part → resolve component key → show related measurements/tests/alerts/history`
 
@@ -199,7 +195,8 @@ The Overview screen includes a detailed procedural GLB model with eight numbered
 | 2 Conservator | Oil and DGA diagnostic records |
 | 3 HV bushings / 4 LV bushings | Insulation diagnostic records |
 | 7 Tap-changer housing | Mechanical / electrical diagnostic records |
-| 6 Cooling fans / 8 control cabinet | Protection and auxiliary event records |
+| 6 Cooling fans | Thermal readings and cooling status |
+| 8 Marshalling / monitoring cabinet | Configured sensor mapping metadata |
 
 The current model is conceptual geometry, not manufacturer-specific CAD, a dimensionally accurate transformer, or a claim about physical sensor locations. The inspector maps components to asset-level health groups and currently available records. For a future detailed model, replace the conceptual geometry with a licensed GLB/glTF CAD export and retain the stable component identifiers / group keys used by the inspector.
 
@@ -231,6 +228,15 @@ This demonstration intentionally has no administrator token or authentication be
 
 ## Synthetic diagnostic demonstration data
 
-When simulation is enabled, the backend seeds one historical set of synthetic diagnostic records per transformer. It includes DGA gases and oil tests, insulation/ dielectric tests, phase-specific HV/LV bushing examples, FRA, winding resistance, partial-discharge, OLTC and radiator records, plus synthetic protection/auxiliary status events. The records use `source=SIMULATED` and include notes stating they are not actual measurements or standards-based pass/fail conclusions. The dashboard normalizes supported parameters to 0–100 using project-defined good/warning/poor anchors, averages them within category, and combines assessed categories using documented weights. Parameters without a defensible project scoring rule remain unscored and reduce coverage. These scores are not IEC/CEA/OEM health ratings.
+When simulation is enabled, the backend seeds one historical set of synthetic diagnostic records per transformer. It includes DGA gases and oil tests, insulation/ dielectric tests, phase-specific HV/LV bushing examples, FRA, winding resistance, partial-discharge, OLTC and radiator records, with a shared DGA sample identifier. No protection-event records are generated or stored. The records use `source=SIMULATED` and include notes stating they are not actual measurements or standards-based pass/fail conclusions. The dashboard normalizes supported parameters to 0–100 using project-defined good/warning/poor anchors, averages them within category, and combines assessed categories using documented weights. Parameters without a defensible project scoring rule remain unscored and reduce coverage. These scores are not IEC/CEA/OEM health ratings.
 
 Synthetic diagnostic history is seeded once per transformer. Continuous simulated telemetry continues at `SIMULATION_INTERVAL_MS` (default 5000 ms). A newly created transformer receives its synthetic diagnostic history on its first simulator tick.
+
+## Engineering improvement update (November 2026)
+
+See `docs/EXECUTION_PLAN_AND_IMPLEMENTATION.md` for the research basis, implementation phases, migration notes, configuration defaults, limitations and verification status. The current simulator uses a simplified load-responsive first-order thermal model; its default parameters are demonstration assumptions, not OEM data. DGA values and ratios are presented as evidence for review and are not automatically classified into definitive faults. Protection-event functionality and protection scoring have been removed. Diagnostic records support optional method/sample/test-condition/baseline metadata. Maintenance history and hourly telemetry roll-up are available.
+
+New database migrations V6-V16 are applied automatically by Flyway. They add diagnostic context, hourly aggregates, maintenance links, persisted simulation state, DGA sample identity and alert lifecycle fields, sensor-channel mapping and remove the legacy protection-event table. Keep the existing database and do not edit earlier migrations. Authentication, authorization and security configuration have intentionally not been changed in this update.
+
+## Transformer engineering configuration
+The asset-registration form accepts OEM thermal constants, cooling-stage configuration and sensor-channel mappings. Sensor mapping JSON keys must match the backend `MeasurementType` enum; for example `{"TOP_OIL_TEMPERATURE":"OTI-01","WINDING_HOTSPOT_TEMPERATURE":"WTI-01"}`. Mapped channel IDs are stored with raw readings and hourly aggregates. These fields configure the demonstration model; they do not represent an actual connected sensor gateway.

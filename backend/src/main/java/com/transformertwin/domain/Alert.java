@@ -8,9 +8,13 @@ public class Alert {
  @Column(nullable=false,length=1000) private String message; @Column(nullable=false,length=20) private String severity;
  @Column(nullable=false,length=20) private String status; @Column(precision=16,scale=5) private BigDecimal observedValue; @Column(length=20) private String unit;
  @Column(nullable=false) private Instant createdAt; private Instant resolvedAt; private Instant acknowledgedAt; @Column(length=100) private String acknowledgedBy;
+ @Column(nullable=false) private Integer occurrenceCount=1;
+ private Instant lastOccurredAt;
+ @Column(length=1000) private String resolutionEvidence;
+ @Column(length=1500) private String operatorNotes;
  protected Alert(){}
- public Alert(Transformer t,String key,String title,String message,String severity,BigDecimal value,String unit,Instant at){transformer=t;conditionKey=key;this.title=title;this.message=message;this.severity=severity;observedValue=value;this.unit=unit;status="ACTIVE";createdAt=at;}
- public void resolve(Instant at){status="RESOLVED";resolvedAt=at;}
+ public Alert(Transformer t,String key,String title,String message,String severity,BigDecimal value,String unit,Instant at){transformer=t;conditionKey=key;this.title=title;this.message=message;this.severity=severity;observedValue=value;this.unit=unit;status="ACTIVE";createdAt=at;lastOccurredAt=at;}
+ public void resolve(Instant at){resolve(at,"Condition no longer detected by the current evaluation.");} public void resolve(Instant at,String evidence){status="RESOLVED";resolvedAt=at;resolutionEvidence=evidence;} public void setOccurrenceCount(int count){occurrenceCount=count;} public void setOperatorNotes(String notes){operatorNotes=notes;}
  public void acknowledge(String by,Instant at){if("ACTIVE".equals(status)&&acknowledgedAt==null){acknowledgedBy=by;acknowledgedAt=at;}}
- public Long getId(){return id;} public Transformer getTransformer(){return transformer;} public String getConditionKey(){return conditionKey;} public String getTitle(){return title;} public String getMessage(){return message;} public String getSeverity(){return severity;} public String getStatus(){return status;} public BigDecimal getObservedValue(){return observedValue;} public String getUnit(){return unit;} public Instant getCreatedAt(){return createdAt;} public Instant getResolvedAt(){return resolvedAt;} public Instant getAcknowledgedAt(){return acknowledgedAt;} public String getAcknowledgedBy(){return acknowledgedBy;}
+ public Long getId(){return id;} public Transformer getTransformer(){return transformer;} public String getConditionKey(){return conditionKey;} public String getTitle(){return title;} public String getMessage(){return message;} public String getSeverity(){return severity;} public String getStatus(){return status;} public BigDecimal getObservedValue(){return observedValue;} public String getUnit(){return unit;} public Instant getCreatedAt(){return createdAt;} public Instant getResolvedAt(){return resolvedAt;} public Instant getAcknowledgedAt(){return acknowledgedAt;} public String getAcknowledgedBy(){return acknowledgedBy;} public Integer getOccurrenceCount(){return occurrenceCount==null?1:occurrenceCount;} public Instant getLastOccurredAt(){return lastOccurredAt;} public String getResolutionEvidence(){return resolutionEvidence;} public String getOperatorNotes(){return operatorNotes;}
 }

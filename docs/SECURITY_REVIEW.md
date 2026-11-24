@@ -2,7 +2,7 @@
 
 ## Threats considered
 
-- Unauthorized asset creation or diagnostic/protection record injection.
+- Unauthorized asset creation, diagnostic/maintenance record injection or alert acknowledgement.
 - SQL injection through search/filter inputs.
 - Excessive pagination or oversized user input.
 - Cross-origin browser access.
@@ -29,7 +29,7 @@
 
 ## Residual risks / deployment requirements
 
-- There is no authentication or authorization in this demo. Any client that can reach the API can create transformers, diagnostic records and protection events. Add OIDC/OAuth2/JWT and role-based authorization before public deployment.
+- There is no authentication or authorization in this demo. Any client that can reach the API can create transformers, diagnostic records, maintenance records and acknowledge alerts. Add OIDC/OAuth2/JWT and role-based authorization before public deployment.
 - HTTPS/TLS must be enabled for deployed traffic.
 - Add reverse-proxy rate limiting, WAF rules if public, security headers, CSRF review for any future cookie auth, and request/connection quotas.
 - Add dependency vulnerability scanning (OWASP Dependency-Check or equivalent), secret scanning, SAST, DAST and regular patching.

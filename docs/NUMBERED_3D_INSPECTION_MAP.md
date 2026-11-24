@@ -9,9 +9,9 @@ The 3D view is a procedural interactive model of the selected CEA-listed 100 MVA
 | 3 | HV bushings A/B/C | Insulation | Component-linked, phase-specific capacitance, tan delta/power factor, leakage and PD records (A/B/C) when entered |
 | 4 | LV bushings a/b/c | Insulation | Component-linked, phase-specific bushing test records (a/b/c) when entered |
 | 5 | Radiator banks | Thermal and loading | Temperature, ambient and cooling evidence |
-| 6 | Cooling fans and motors | Protection and auxiliary; thermal | Simulated fan state and recorded cooling alarms |
+| 6 | Cooling fans and motors | Thermal | Simulated fan state and cooling telemetry |
 | 7 | OLTC compartment / drive | Mechanical and electrical | Simulated tap position, demonstration operation count and motor-current pulse; imported timing, contact resistance and compartment DGA tests |
-| 8 | Marshalling / control cabinet | Protection and auxiliary | Buchholz, PRD, temperature/oil-level alarms and auxiliary events |
+| 8 | Marshalling / monitoring cabinet | Sensor mapping metadata | Configured sensor-to-measurement mapping; no protection-event monitoring |
 
 The API now stores optional component keys and phase labels on diagnostic records. A diagnostic appears on its linked 3D inspection area; legacy records without a component key remain asset-level and may appear in matching group views. These links identify the record subject, not a verified physical sensor location.
 

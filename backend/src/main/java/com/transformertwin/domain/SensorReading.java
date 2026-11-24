@@ -8,9 +8,9 @@ public class SensorReading {
  @Column(nullable=false,precision=16,scale=5) private BigDecimal value;
  @Column(nullable=false,length=40) private String unit;
  @Enumerated(EnumType.STRING) @Column(nullable=false,length=20) private DataSourceType source;
- @Column(nullable=false) private Instant recordedAt;
+ @Column(nullable=false) private Instant recordedAt; @Column(name="sensor_key",length=120,nullable=false) private String sensorKey;
  protected SensorReading(){}
- public SensorReading(Transformer t,MeasurementType m,BigDecimal v,String u,DataSourceType s,Instant at){transformer=t;measurementType=m;value=v;unit=u;source=s;recordedAt=at;}
+ public SensorReading(Transformer t,MeasurementType m,BigDecimal v,String u,DataSourceType s,Instant at,String sensorKey){transformer=t;measurementType=m;value=v;unit=u;source=s;recordedAt=at;this.sensorKey=sensorKey==null?"":sensorKey;}
  public Long getId(){return id;} public Transformer getTransformer(){return transformer;} public MeasurementType getMeasurementType(){return measurementType;}
- public BigDecimal getValue(){return value;} public String getUnit(){return unit;} public DataSourceType getSource(){return source;} public Instant getRecordedAt(){return recordedAt;}
+ public BigDecimal getValue(){return value;} public String getUnit(){return unit;} public DataSourceType getSource(){return source;} public Instant getRecordedAt(){return recordedAt;} public String getSensorKey(){return sensorKey;}
 }

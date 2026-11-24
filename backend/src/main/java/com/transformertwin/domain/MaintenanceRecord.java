@@ -1,0 +1,9 @@
+package com.transformertwin.domain;
+import jakarta.persistence.*;import java.time.Instant;
+@Entity @Table(name="maintenance_record",indexes=@Index(name="idx_maintenance_asset_date",columnList="transformer_id,performed_at"))
+public class MaintenanceRecord{
+ @Id @GeneratedValue(strategy=GenerationType.IDENTITY) private Long id;@ManyToOne(fetch=FetchType.LAZY,optional=false)@JoinColumn(name="transformer_id")private Transformer transformer;
+ @Column(nullable=false,length=60)private String activityType;@Column(nullable=false,length=80)private String componentKey;@Column(nullable=false,length=1000)private String description;@Column(nullable=false)private Instant performedAt;@Column(length=120)private String performedBy;@Column(length=1000)private String findings;private Instant nextDueAt; @Column(name="related_alert_id") private Long relatedAlertId; @Column(name="related_diagnostic_id") private Long relatedDiagnosticId;
+ protected MaintenanceRecord(){}public MaintenanceRecord(Transformer t,String type,String component,String description,Instant at,String by,String findings,Instant due){transformer=t;activityType=type;componentKey=component;this.description=description;performedAt=at;performedBy=by;this.findings=findings;nextDueAt=due;}
+ public Long getId(){return id;}public Transformer getTransformer(){return transformer;}public String getActivityType(){return activityType;}public String getComponentKey(){return componentKey;}public String getDescription(){return description;}public Instant getPerformedAt(){return performedAt;}public String getPerformedBy(){return performedBy;}public String getFindings(){return findings;}public Instant getNextDueAt(){return nextDueAt;} public Long getRelatedAlertId(){return relatedAlertId;} public Long getRelatedDiagnosticId(){return relatedDiagnosticId;} public void setRelatedRecords(Long alertId,Long diagnosticId){relatedAlertId=alertId;relatedDiagnosticId=diagnosticId;}
+}

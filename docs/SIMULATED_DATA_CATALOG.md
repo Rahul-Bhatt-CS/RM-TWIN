@@ -30,7 +30,7 @@ The backend seeds synthetic historical diagnostic examples for every simulation-
 | Radiators | Radiator temperature-difference test record |
 | Cooling fans | Fan vibration example and continuous fan state |
 | OLTC | Contact resistance and operating-time sample records, plus continuous tap/motor telemetry |
-| Control cabinet | Synthetic protection/auxiliary status events |
+| Control cabinet | Sensor mapping metadata only; no protection-event feature is implemented |
 
 All diagnostic rows use `source=SIMULATED`, lab name `GridPulse synthetic data generator`, and notes explaining that they are not actual measured results or standard pass/fail limits. The seed is idempotent per transformer: the presence of a simulated DGA seed record prevents repeated historical inserts on each tick/restart.
 
@@ -38,15 +38,14 @@ All diagnostic rows use `source=SIMULATED`, lab name `GridPulse synthetic data g
 
 The current health assessment uses illustrative scenario scores when a corresponding synthetic data group exists:
 
-| Group | Weight | Demonstration score |
-|---|---:|---:|
-| Thermal and loading | 25% | Calculated from the current demo hot-spot/load rule bands |
-| Oil and DGA | 30% | 84 |
-| Insulation | 25% | 88 |
-| Mechanical and electrical | 15% | 86 |
-| Protection and auxiliary | 5% | 95 |
+| Group | Weight after normalization | Demonstration treatment |
+|---|---:|---|
+| Thermal condition | 26.32% | Requires both fresh top-oil and winding hot-spot readings |
+| Oil quality and DGA | 31.58% | Selected oil tests can be screened; DGA remains sample-level evidence only |
+| Insulation | 26.32% | Selected supported test parameters only |
+| Mechanical and electrical | 15.78% | Selected FRA / fan-vibration demonstration anchors only |
 
-These are UI demonstration scores only. The oil/DGA score is **not** derived from IEC 60599 or IEEE C57.104 interpretation. The insulation and mechanical scores are **not** pass/fail results under IEC/IS standards. The protection score reflects only that synthetic status records exist; it does not mean the relay or trip circuit was tested.
+These are UI demonstration scores only. The oil/DGA score is **not** derived from IEC 60599 or IEEE C57.104 interpretation. The insulation and mechanical scores are **not** pass/fail results under IEC/IS standards. Protection and auxiliary systems are excluded from the Health Index; no relay or trip-circuit health is inferred.
 
 Imported diagnostic records without an approved, validated interpretation method remain `RECORDED_NOT_INTERPRETED` and do not contribute to the composite score. Missing data is never silently treated as healthy.
 

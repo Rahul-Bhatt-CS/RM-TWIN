@@ -12,6 +12,18 @@ public class Transformer {
  @Column(length=40) private String coolingType; @Column(length=60) private String insulationType; private LocalDate commissioningDate;
  @Column(length=180) private String location; @Column(length=1000) private String description;
  private boolean simulationEnabled=true;
+ @Column(name="rated_top_oil_rise_k",precision=8,scale=3) private BigDecimal ratedTopOilRiseK;
+ @Column(name="rated_hotspot_gradient_k",precision=8,scale=3) private BigDecimal ratedHotspotGradientK;
+ @Column(name="oil_time_constant_min",precision=8,scale=3) private BigDecimal oilTimeConstantMin;
+ @Column(name="winding_time_constant_min",precision=8,scale=3) private BigDecimal windingTimeConstantMin;
+ @Column(name="loss_ratio",precision=8,scale=3) private BigDecimal lossRatio;
+ @Column(name="cooling_stages",length=300) private String coolingStages;
+ @Column(name="sensor_mapping",columnDefinition="TEXT") private String sensorMapping;
+ @Column(name="simulation_tick") private Long simulationTick=0L;
+ @Column(name="top_oil_rise_k_state",precision=10,scale=4) private BigDecimal topOilRiseState=BigDecimal.valueOf(35);
+ @Column(name="hotspot_gradient_k_state",precision=10,scale=4) private BigDecimal hotspotGradientState=BigDecimal.valueOf(15);
+ @Column(name="oltc_tap_position") private Integer oltcTapPosition=0;
+ @Column(name="oltc_operation_count") private Long oltcOperationCount=0L;
  @Column(nullable=false) private Instant createdAt; @Column(nullable=false) private Instant updatedAt;
  @PrePersist void create(){createdAt=Instant.now();updatedAt=createdAt;}
  @PreUpdate void update(){updatedAt=Instant.now();}
@@ -25,4 +37,8 @@ public class Transformer {
  public LocalDate getCommissioningDate(){return commissioningDate;} public String getLocation(){return location;}
  public String getDescription(){return description;} public boolean isSimulationEnabled(){return simulationEnabled;}
  public Instant getCreatedAt(){return createdAt;} public Instant getUpdatedAt(){return updatedAt;}
+ public BigDecimal getRatedTopOilRiseK(){return ratedTopOilRiseK;} public BigDecimal getRatedHotspotGradientK(){return ratedHotspotGradientK;} public BigDecimal getOilTimeConstantMin(){return oilTimeConstantMin;} public BigDecimal getWindingTimeConstantMin(){return windingTimeConstantMin;} public BigDecimal getLossRatio(){return lossRatio;} public String getCoolingStages(){return coolingStages;} public String getSensorMapping(){return sensorMapping;}
+ public Long getSimulationTick(){return simulationTick==null?0L:simulationTick;} public BigDecimal getTopOilRiseState(){return topOilRiseState==null?BigDecimal.valueOf(35):topOilRiseState;} public BigDecimal getHotspotGradientState(){return hotspotGradientState==null?BigDecimal.valueOf(15):hotspotGradientState;} public Integer getOltcTapPosition(){return oltcTapPosition==null?0:oltcTapPosition;} public Long getOltcOperationCount(){return oltcOperationCount==null?0L:oltcOperationCount;}
+ public void updateEngineeringConfig(BigDecimal topOil,BigDecimal hotspot,BigDecimal oilTau,BigDecimal windingTau,BigDecimal losses,String stages,String mapping){ratedTopOilRiseK=topOil;ratedHotspotGradientK=hotspot;oilTimeConstantMin=oilTau;windingTimeConstantMin=windingTau;lossRatio=losses;coolingStages=stages;sensorMapping=mapping;}
+ public void updateSimulationState(long tick,BigDecimal oilRise,BigDecimal hotspotGradient,int tap,long operations){simulationTick=tick;topOilRiseState=oilRise;hotspotGradientState=hotspotGradient;oltcTapPosition=tap;oltcOperationCount=operations;}
 }

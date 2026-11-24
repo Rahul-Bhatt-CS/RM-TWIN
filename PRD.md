@@ -23,8 +23,8 @@ A web application for registering transformers and reviewing their simulated ope
 - DGA results are displayed as evidence; the app does not automatically diagnose faults.
 
 ### D. Review alerts and history
-- Alerts are created from configured demonstration triggers and reported active protection events.
-- Readings, diagnostics, alerts, health history and protection events are returned in pages.
+- Alerts are created from configured demonstration triggers and diagnostic evidence; protection-event functionality is out of scope and removed.
+- Readings, diagnostics, alerts and maintenance records are returned in pages. Only the latest health assessment is retained and shown on the dashboard.
 - Page size is bounded to 100.
 
 ### E. Review health index
@@ -37,7 +37,6 @@ A web application for registering transformers and reviewing their simulated ope
 - Transformer
 - SensorReading
 - DiagnosticTest
-- ProtectionEvent
 - HealthAssessment
 - HealthComponentScore
 - Alert
@@ -45,7 +44,7 @@ A web application for registering transformers and reviewing their simulated ope
 ## User experience
 - Fleet overview with add-asset action.
 - Asset selector and overview dashboard.
-- Tabs for readings, diagnostics, alerts, health history and protection events.
+- Tabs for readings, diagnostics, alerts and maintenance.
 - Paginated tables with empty states.
 - Responsive layout and accessible labels.
 

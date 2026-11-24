@@ -38,3 +38,13 @@ Administrator token remains removed as requested. Write APIs remain unauthentica
 - Kept manual entry for offline diagnostic/laboratory results only.
 - Added alert acknowledgement (migration V5). Acknowledgement records review and does not resolve an alert.
 - Documented all scoring assumptions and limitations in `docs/HEALTH_INDEX_AND_DOMAIN_MODEL.md`.
+
+## Engineering upgrade (November 2026)
+- Replaced scripted thermal values with a configurable first-order dynamic thermal response and load-responsive operating scenario.
+- Made forced cooling and pump telemetry conditional on configured cooling type; OLTC count is now event-driven.
+- Removed synthetic protection-health scoring and unsupported standalone DGA scoring.
+- Added stale telemetry alerts and diagnostic evidence freshness.
+- Added DGA evidence/ratio/rate endpoint, diagnostic test-condition metadata and cross-page server-side search.
+- Added sensor history time windows, hourly aggregation/retention, and maintenance history.
+- Added thermal model unit tests and implementation/research documentation.
+- Authentication, authorization and security configuration unchanged.

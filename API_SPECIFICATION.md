@@ -10,10 +10,8 @@ Base path: `/api`. JSON REST endpoints plus SSE. All page responses include `con
 | GET | `/transformers/{id}/dashboard` | Public read | Latest readings, health and active-alert count |
 | GET | `/transformers/{id}/readings?metric=...&page=0&size=25` | Public read | Paginated readings |
 | GET/POST | `/transformers/{id}/diagnostics` | Unauthenticated demo write | List/add diagnostic results |
-| GET | `/transformers/{id}/protection-events` | Public read | List simulated/recorded protection events |
 | GET | `/transformers/{id}/alerts?page=0&size=25` | Public read | Paginated alerts |
 | POST | `/alerts/{alertId}/acknowledge?by=Operator` | Unauthenticated demo write | Acknowledge an active alert without resolving it |
-| GET | `/transformers/{id}/health-history?page=0&size=25` | Public read | Paginated assessment history |
 | GET | `/transformers/{id}/events` | Public read | SSE dashboard events |
 
 ## Write access
@@ -42,4 +40,31 @@ Transformer create/read contracts include `lvVoltageKv`, `ratedFrequencyHz` and 
 ## Alert acknowledgement
 - `POST /api/alerts/{alertId}/acknowledge?by=Operator` records acknowledgement for an active alert.
 - Acknowledgement does not resolve or suppress the alert condition. The alert is resolved only when the backend assessment no longer detects the condition.
-- Protection-event history is read-only in this demo; there is no manual protection-event or alarm creation endpoint.
+- Protection-event functionality has been removed. There is no protection-event endpoint or persistence entity.
+
+
+## Engineering update endpoints
+
+- `GET /api/transformers/{id}/dga-analysis`: latest DGA gas evidence, sample counts, selected ratios and rate-of-rise when two time-separated samples are available. The endpoint deliberately does not return a definitive fault label.
+- `GET /api/transformers/{id}/diagnostics?page=&size=&q=`: paginated diagnostic records; `q` searches parameter, test type, component, phase, laboratory and notes across the asset's records.
+- `POST /api/transformers/{id}/diagnostics`: accepts optional `testMethod`, `samplePoint`, `testTemperatureC`, `testVoltage`, `testDurationSeconds` and `baselineReference` context fields.
+- `GET /api/transformers/{id}/maintenance?page=&size=`: paginated maintenance history.
+- `POST /api/transformers/{id}/maintenance`: creates an inspection, test, service or repair log entry.
+- `GET /api/transformers/{id}/readings?metric=&from=&to=&page=&size=`: optional ISO-8601 time-window filtering.
+
+## Operational notes
+
+- Health assessment is persisted once per 12 simulation ticks (one minute with the default five-second tick).
+- Thermal constants and freshness windows are configurable in `application.properties`. Defaults are demonstration assumptions.
+- Flyway V6-V16 add diagnostic context, hourly sensor aggregates, maintenance history, persistent simulator state, DGA sample identity, alert lifecycle fields, aggregate units and sensor-channel identity. V9 drops the legacy protection-event table.
+
+
+## Current workflow additions
+- `GET /transformers/{id}/readings/aggregated?metric=...&from=...&to=...` returns hourly average/minimum/maximum/sample-count points for long-range history.
+- `POST /alerts/{alertId}/notes` accepts `{ "notes": "..." }` for operator investigation notes.
+- DGA diagnostic creation requires `sampleId`; sample-level analysis is returned by `GET /transformers/{id}/dga-analysis`.
+- Maintenance creation accepts optional `relatedAlertId` and `relatedDiagnosticId`; each linked record must belong to the same transformer.
+- Protection event and health-history endpoints have been removed. The latest health assessment remains available in the dashboard only.
+
+## Transformer engineering configuration
+`POST /transformers` also accepts optional `ratedTopOilRiseK`, `ratedHotspotGradientK`, `oilTimeConstantMin`, `windingTimeConstantMin`, `lossRatio`, `coolingStages` and `sensorMapping`. Thermal values should be taken from OEM heat-run/GTP data; omitted values use demonstration defaults. `coolingStages` is a comma-separated configuration such as `ONAN,ONAF` or `OFAF`. `sensorMapping` is a JSON object keyed by `MeasurementType`, for example `{ "TOP_OIL_TEMPERATURE": "OTI-01", "WINDING_HOTSPOT_TEMPERATURE": "WTI-01" }`. The mapped sensor key is attached to generated raw readings and hourly aggregates; unmapped channels are labelled `Unmapped` in the UI.
