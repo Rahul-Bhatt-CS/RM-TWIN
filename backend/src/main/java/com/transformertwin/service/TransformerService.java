@@ -7,7 +7,7 @@ import java.time.Instant; import java.util.*; import com.fasterxml.jackson.datab
 public class TransformerService {
  private final TransformerRepository transformers; private final SensorReadingRepository readings; private final HealthAssessmentRepository health; private final AlertRepository alerts; private final ObjectMapper objectMapper;
  public TransformerService(TransformerRepository t,SensorReadingRepository r,HealthAssessmentRepository h,AlertRepository a,ObjectMapper objectMapper){transformers=t;readings=r;health=h;alerts=a;this.objectMapper=objectMapper;}
- public PageResponse<TransformerView> list(int page,int size){return ApiDtos.page(transformers.findAll(PageRequest.of(page,size,Sort.by("name").ascending())),TransformerView::from);}
+ public PageResponse<TransformerView> list(int page,int size){return  ApiDtos.page(transformers.findAll(PageRequest.of(page,size,Sort.by("name").ascending())),TransformerView::from);}
  public Transformer get(Long id){return transformers.findById(id).orElseThrow(()->new NoSuchElementException("Transformer not found"));}
  @Transactional public TransformerView create(TransformerCreate x){
   if(transformers.findByAssetCode(x.assetCode()).isPresent())throw new IllegalArgumentException("Asset code already exists.");
